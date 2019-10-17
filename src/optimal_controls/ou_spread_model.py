@@ -9,14 +9,6 @@ from .ou_spread_model_output import OU_Spread_Model_Output
 
 class OU_Spread_Model:
     
-    """
-    
-       Computes optimal allocation in pairs trading portfolio as solved by
-       Supakorn Mudchanatongsuk, James A. Primbs and Wilfred Wong
-       
-       http://folk.ntnu.no/skoge/prost/proceedings/acc08/data/papers/0479.pdf
-       
-    """
     
     @staticmethod
     def solve_alpha(gamma,kappa,eta,tau):

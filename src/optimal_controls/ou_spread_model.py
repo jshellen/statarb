@@ -9,7 +9,6 @@ from .ou_spread_model_output import OU_Spread_Model_Output
 
 class OU_Spread_Model:
     
-    
     @staticmethod
     def solve_alpha(gamma,kappa,eta,tau):
         """
@@ -39,8 +38,7 @@ class OU_Spread_Model:
         if(abs(a)<10e-16):
             raise ValueError('Encountered zero division in alpha function')
         else:
-            t_1 = (kappa*(1-a))/(2*eta*
-                  *2)
+            t_1 = (kappa*(1-a))/(2*eta**2)
             t_2 = 1.0+(2*a)/(1-a-(1+a)*exp((2*kappa*(tau))/a))
             
         return t_1*t_2
@@ -73,7 +71,7 @@ class OU_Spread_Model:
             raise ValueError('Gamma has to be strictly lower than 1.0!')
             
         if(tau<0.0):
-            raise ValueError('Tau cannot be negative!')
+            raise ValueError('Tau cannot be negative.')
             
         a = sqrt(1.0-gamma)
         
@@ -172,21 +170,9 @@ class OU_Spread_Model:
         if(not isinstance(tau,float)):
             raise TypeError('Tau has to be type of float!')
             
-        
-        # Compute optimal trading allocation percentage
-        gamma = model_params.risk_tolerance
-        
-        if(gamma>=1):
-            raise ValueError('Gamma has to be < 1. Otherwise we get imaginary solution.')
-        else:
-        
-            kappa   = model_params.kappa
-            eta     = model_params.eta
-            theta   = model_params.theta
-            sigma_B = model_params.sigma_B
-            rho     = model_params.rho
-            
-            solution = OU_Spread_Model.solve_h_prime(gamma,kappa,theta,eta,sigma_B,rho,tau,x)
+        solution = OU_Spread_Model.solve_h_prime(model_params.risk_tolerance,model_params.kappa,
+                                                 model_params.theta,model_params.eta,
+                                                 model_params.sigma_B,model_params.rho,tau,x)
 
         out = OU_Spread_Model_Output(solution,model_params,model_params,x,tau)
         

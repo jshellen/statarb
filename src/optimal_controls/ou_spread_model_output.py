@@ -65,6 +65,8 @@ class OU_Spread_Model_Output:
         
         Dollar allocation for asset A given nominal.
         
+        TODO: Check for None before multiplying
+        
         """
         return self.model_parameters.nominal*self.alloc_a_pct
     
@@ -74,6 +76,8 @@ class OU_Spread_Model_Output:
         
         Dollar allocation for asset B given nominal.
         
+        TODO: Check for None before multiplying
+                
         """        
         return self.model_parameters.nominal*self.alloc_b_pct
     
@@ -84,6 +88,8 @@ class OU_Spread_Model_Output:
         Dollar allocation for asset A - truncated to maximum leverage % times
         nominal allocation.
         
+        TODO: Check for None before multiplying
+                
         """
         return self.model_parameters.nominal*self.alloc_a_pct_trunc
 
@@ -94,6 +100,8 @@ class OU_Spread_Model_Output:
         Dollar allocation for asset B - truncated to maximum leverage % times
         nominal allocation.
         
+        TODO: Check for None before multiplying
+                
         """
         return self.model_parameters.nominal*self.alloc_b_pct_trunc
     
@@ -112,6 +120,8 @@ class OU_Spread_Model_Output:
         
         % allocation for asset B
         
+        TODO: Check for None before multiplying
+                
         """
         return -self.opt_alloc
     
@@ -121,6 +131,8 @@ class OU_Spread_Model_Output:
         
         % allocation for asset A - truncated to maximum leverage %
         
+        TODO: Check for None before operations
+                
         """            
         if(self.opt_alloc<0):
             pct_a = max(-self.model_parameters.maximum_leverage,self.opt_alloc)
@@ -134,6 +146,8 @@ class OU_Spread_Model_Output:
         """
         
         % allocation for asset B - truncated to maximum leverage %
+        
+        TODO: Check for None before operations
         
         """                
         if(self.opt_alloc<0):

@@ -64,6 +64,10 @@ model_params = OU_Spread_Model_Parameters(nominal, symbol_A, symbol_B, horizon, 
 
 from src.optimal_controls.ou_spread_model import OU_Spread_Model
 
+tau = 1.0
+x   = 0.0
+
+OU_Spread_Model.solve_allocation(model_params,x,tau)
 
 
 

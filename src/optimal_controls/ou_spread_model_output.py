@@ -6,20 +6,28 @@ Created on Wed Sep 25 10:33:40 2019
 """
 from copy import deepcopy
 
+from .ou_params import Ornstein_Uhlenbeck_Parameters
+from .ou_spread_model_parameters import OU_Spread_Model_Parameters
+
 class OU_Spread_Model_Output:
     
-    """
-    
-       Encapsulates optimal allocation in pairs trading portfolio as solved by
-       Supakorn Mudchanatongsuk, James A. Primbs and Wilfred Wong
-       
-       http://folk.ntnu.no/skoge/prost/proceedings/acc08/data/papers/0479.pdf
-       
-    """
-    
-    def __init__(self,opt_alloc,model_params,x_ref,tau_ref):
+    def __init__(self,opt_alloc,ou_params,model_params,x_ref,tau_ref):
+
+
+        if(not isinstance(ou_params,Ornstein_Uhlenbeck_Parameters)):
+            raise TypeError('OU parameters have to be type of Ornstein_Uhlenbeck_Parameters!')
         
+        if(not isinstance(model_params,OU_Spread_Model_Parameters)):
+            raise TypeError('Model parameters have to be type of OU_Spread_Model_Parameters!')
+        
+        if(not isinstance(x_ref,float)):
+            raise TypeError('X has to be type of float!')
+        
+        if(not isinstance(tau_ref,float)):
+            raise TypeError('Tau has to be type of float!')
+            
         self.m_opt_alloc    = opt_alloc
+        self.m_ou_params    = ou_params
         self.m_model_params = model_params
         self.m_x_ref        = x_ref
         self.m_tau_ref      = tau_ref
@@ -31,6 +39,14 @@ class OU_Spread_Model_Output:
         
         """
         return deepcopy(self.m_opt_alloc)
+    
+    @property
+    def ou_parameters(self):
+        """
+        Returns a deep copied instance of the Ornstein-Uhlenbec parameters
+        used to arrive at the optimal solution.
+        """
+        return deepcopy(self.m_ou_params)
     
     @property
     def model_parameters(self):

@@ -2,6 +2,7 @@
 
 from numpy import sqrt, exp, finfo
 
+from .ou_params import Ornstein_Uhlenbeck_Parameters
 from .ou_spread_model_parameters import OU_Spread_Model_Parameters
 
 from .ou_spread_model_output import OU_Spread_Model_Output
@@ -148,18 +149,26 @@ class OU_Spread_Model:
         return h
     
     @staticmethod
-    def solve_allocation(model_params,x,tau):
+    def solve_allocation(ou_params,model_params,x,tau):
         """
+        
+        INPUTS:
+        --------
         
         Optimal allocation to asset A given:
             
-            1) Model parameters
+            1) ou_params <> Ornstein Uhlenbeck parameters
     
-            2) Current spread level
+            2) Model parameters
     
-            3) Trading time remaining
+            3) Current spread level
+    
+            4) Trading time remaining
         
         """
+        
+        if(not isinstance(ou_params,Ornstein_Uhlenbeck_Parameters)):
+            raise TypeError('OU parameters have to be type of Ornstein_Uhlenbeck_Parameters!')
         
         if(not isinstance(model_params,OU_Spread_Model_Parameters)):
             raise TypeError('Model parameters have to be type of OU_Spread_Model_Parameters!')
@@ -170,11 +179,11 @@ class OU_Spread_Model:
         if(not isinstance(tau,float)):
             raise TypeError('Tau has to be type of float!')
             
-        solution = OU_Spread_Model.solve_h_prime(model_params.risk_tolerance,model_params.kappa,
-                                                 model_params.theta,model_params.eta,
-                                                 model_params.sigma_B,model_params.rho,tau,x)
+        solution = OU_Spread_Model.solve_h_prime(model_params.risk_tolerance,ou_params.kappa,
+                                                 ou_params.theta,ou_params.eta,
+                                                 ou_params.sigma_B,ou_params.rho,tau,x)
 
-        out = OU_Spread_Model_Output(solution,model_params,model_params,x,tau)
+        out = OU_Spread_Model_Output(solution,ou_params,model_params,x,tau)
         
         return out
 

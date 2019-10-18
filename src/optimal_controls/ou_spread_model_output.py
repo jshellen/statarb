@@ -37,10 +37,10 @@ class OU_Spread_Model_Output:
     @property
     def optimal_allocation(self):
         """
-        Returns a deep copied instance of the optimal allocation.
+        Returns the optimal allocation.
         
         """
-        return deepcopy(self.m_opt_alloc)
+        return self.m_opt_alloc
     
     @property
     def ou_parameters(self):
@@ -112,7 +112,7 @@ class OU_Spread_Model_Output:
         % allocation for asset A
         
         """        
-        return self.opt_alloc
+        return self.m_opt_alloc
     
     @property
     def alloc_b_pct(self):
@@ -123,7 +123,7 @@ class OU_Spread_Model_Output:
         TODO: Check for None before multiplying
                 
         """
-        return -self.opt_alloc
+        return -self.m_opt_alloc
     
     @property
     def alloc_a_pct_trunc(self):
@@ -134,10 +134,10 @@ class OU_Spread_Model_Output:
         TODO: Check for None before operations
                 
         """            
-        if(self.opt_alloc<0):
-            pct_a = max(-self.model_parameters.maximum_leverage,self.opt_alloc)
+        if(self.m_opt_alloc<0):
+            pct_a = max(-self.model_parameters.maximum_leverage,self.m_opt_alloc)
         else:
-            pct_a = min(self.model_parameters.maximum_leverage,self.opt_alloc)
+            pct_a = min(self.model_parameters.maximum_leverage,self.m_opt_alloc)
         return pct_a
         
     

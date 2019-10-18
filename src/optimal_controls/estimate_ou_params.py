@@ -1,9 +1,5 @@
 # -*- coding: utf-8 -*-
-"""
-Created on Wed Sep 25 10:31:14 2019
 
-@author: helleju
-"""
 from numpy import roll, sqrt, log, std, ndarray
 import statsmodels.api as sm
 

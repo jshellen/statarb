@@ -30,6 +30,7 @@ def estimate_ou_parameters(x,dt):
     b  = ols_est._results.params[0] 
     
     kappa = -log(a)/dt
+    # TODO: handle zero division
     theta = b/(1 - a)
     sigma = std(ols_est.resid)*(sqrt(-2*log(a)/(dt*(1-a**2))))       
     

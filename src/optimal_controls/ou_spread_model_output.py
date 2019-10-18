@@ -12,8 +12,10 @@ from .ou_spread_model_parameters import OU_Spread_Model_Parameters
 class OU_Spread_Model_Output:
     
     def __init__(self,opt_alloc,ou_params,model_params,x_ref,tau_ref):
-
-
+        
+        if(not isinstance(opt_alloc,float)):
+            raise TypeError('Opt_alloc has to be type of float!')
+        
         if(not isinstance(ou_params,Ornstein_Uhlenbeck_Parameters)):
             raise TypeError('OU parameters have to be type of Ornstein_Uhlenbeck_Parameters!')
         

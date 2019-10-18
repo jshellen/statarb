@@ -63,7 +63,7 @@ model_params = OU_Spread_Model_Parameters(nominal, symbol_A, symbol_B, horizon, 
 #%%
 from utils.plot_utils import plot_optimal_solution
 
-plot_optimal_solution(X,ou_params,model_params)
+plot_optimal_solution(X,ou_params,model_params,100)
 
 
 

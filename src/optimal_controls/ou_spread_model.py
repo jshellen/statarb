@@ -183,7 +183,6 @@ class OU_Spread_Model:
                                                  ou_params.theta,ou_params.eta,
                                                  ou_params.sigma_B,ou_params.rho,tau,x)
 
-        print(tau)
         out = OU_Spread_Model_Output(solution,ou_params,model_params,x,tau)
         
         return out

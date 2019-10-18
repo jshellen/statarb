@@ -16,7 +16,6 @@ dt      = 1.0/250.0
 
 A,B,X = simulate_cointegrated_assets(N_sim,N_steps,B_0,mu,kappa,theta,eta,sigma_B,dt)
 
-
 #%
 
 import matplotlib.pyplot as plt
@@ -46,6 +45,7 @@ from src.optimal_controls.ou_spread_model_parameters import OU_Spread_Model_Para
 params  = Ornstein_Uhlenbeck_Parameters()
 success = params.estimate_using_ols(A,B,dt)
 if(success):
+    print('OLS estimates are:')
     print(params)
 else:
     print('Failed to estimate model parameters!')

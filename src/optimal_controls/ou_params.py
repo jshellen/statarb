@@ -8,6 +8,8 @@ from numpy              import log, sqrt, ndarray
 
 from .estimate_ou_params import estimate_ou_parameters
 
+NONE_TYPE = type(None)
+
 class Ornstein_Uhlenbeck_Parameters:
     """
     Encapsulates Ornstein Uhlenbeck process parameters.
@@ -15,29 +17,26 @@ class Ornstein_Uhlenbeck_Parameters:
     """
     def __init__(self,kappa=None,theta=None,eta=None,sigma_B=None,rho=None):
         
-        
-       
-        if("kappa" is not None):
+        if(not isinstance(kappa,NONE_TYPE)):
             if(not isinstance(kappa,float)):
-                raise TypeError('Kappa has to be float!')
+                raise TypeError(f'Kappa has to be float instead of {type(kappa)}!')
                 
-        if("theta" is not None):
-            if(not isinstance(sigma_B,float)):
+        if(not isinstance(theta,NONE_TYPE)):
+            if(not isinstance(theta,float)):
                 raise TypeError('theta has to be float!')
                 
-        if("eta" is not None):
-            if(not isinstance(rho,float)):
+        if(not isinstance(eta,NONE_TYPE)):
+            if(not isinstance(eta,float)):
                 raise TypeError('eta has to be float!')
                 
-        if("sigma_B" is not None):
+        if(not isinstance(sigma_B,NONE_TYPE)):
             if(not isinstance(sigma_B,float)):
                 raise TypeError('sigma_B has to be float!')
                     
-        if("rho" is not None):
+        if(not isinstance(rho,NONE_TYPE)):
             if(not isinstance(rho,float)):
                 raise TypeError('rho has to be float!')
-
-                    
+                
         # Initialize values to none
         self.m_eta     = eta
         self.m_sigma_B = sigma_B

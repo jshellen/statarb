@@ -13,50 +13,37 @@ class Ornstein_Uhlenbeck_Parameters:
     Encapsulates Ornstein Uhlenbeck process parameters.
     
     """
-    def __init__(self,json=None):
+    def __init__(self,kappa=None,theta=None,eta=None,sigma_B=None,rho=None):
         
         
-        if(json is not None):
-            if(not isinstance(json,dict)):
-                raise TypeError('Input has to be a dictionary!')
-        
-            if("eta" not in json):
-                raise ValueError('Eta was not defined in parameters!')
-            else:
-                if(not isinstance(json["eta"],float)):
-                    raise TypeError('Eta has to be float!')
-                    
-                self.eta = json["eta"]
+       
+        if("kappa" is not None):
+            if(not isinstance(kappa,float)):
+                raise TypeError('Kappa has to be float!')
                 
-            if("sigma_B" not in json):
-                raise ValueError('sigma_B was not defined in parameters!')
-            else:
-                if(not isinstance(json["sigma_B"],float)):
-                    raise TypeError('sigma_B has to be float!')
-                    
-                self.sigma_B = json["sigma_B"]   
+        if("theta" is not None):
+            if(not isinstance(sigma_B,float)):
+                raise TypeError('theta has to be float!')
                 
-            if("rho" not in json):
-                raise ValueError('rho was not defined in parameters!')
-            else:
-                if(not isinstance(json["rho"],float)):
-                self.rho = json["rho"]     
-            if("theta" not in json):
-                raise ValueError('theta was not defined!')
-            else:
-                self.theta = json["theta"]    
-            if("kappa" not in json):
-                raise ValueError('kappa was not defined!')
-            else:
-                self.kappa = json["kappa"]  
-        else:                 
-            
-            # Initialize values to none
-            self.m_eta     = None
-            self.m_sigma_B = None
-            self.m_rho     = None
-            self.m_theta   = None
-            self.m_kappa   = None
+        if("eta" is not None):
+            if(not isinstance(rho,float)):
+                raise TypeError('eta has to be float!')
+                
+        if("sigma_B" is not None):
+            if(not isinstance(sigma_B,float)):
+                raise TypeError('sigma_B has to be float!')
+                    
+        if("rho" is not None):
+            if(not isinstance(rho,float)):
+                raise TypeError('rho has to be float!')
+
+                    
+        # Initialize values to none
+        self.m_eta     = eta
+        self.m_sigma_B = sigma_B
+        self.m_rho     = rho
+        self.m_theta   = theta
+        self.m_kappa   = kappa
     
     
     @property
@@ -98,7 +85,7 @@ class Ornstein_Uhlenbeck_Parameters:
     def estimate_using_ols(self,A_data,B_data,dt):
         """
         Estimates Ornstein Uhlenbeck stochastic process parameters from price
-        series.
+        series using ordinary least squares estimation.
         
         If the estimation is successfull the method returns 1, else 0.
         
@@ -156,24 +143,24 @@ class Ornstein_Uhlenbeck_Parameters:
     
     def __str__(self):
         
-        if(self.kappa is not None):
+        if(isinstance(self.kappa,float)):
             kappa = round(self.kappa,2)
         else:
-            kappa = self.kappa
+            kappa = ''
         
-        if(self.theta is not None):
+        if(isinstance(self.theta,float)):
             theta = round(self.theta,2)
         else:
-            theta = self.theta
+            theta = ''
         
-        if(self.rho is not None):
-            rho   = round(self.rho,2)
+        if(isinstance(self.rho,float)):
+            rho = round(self.rho,2)
         else:
-            rho   = self.rho
+            rho = ''
         
-        if(self.eta is not None):
-            eta   = round(self.eta,2)
+        if(isinstance(self.eta,float)):
+            eta = round(self.eta,2)
         else:
-            eta   = self.eta
+            eta = ''
         
         return f"Ornstein-Uhlenbeck Parameters: Kappa = {kappa}, Theta = {theta}, Rho = {rho}, Eta = {eta}"

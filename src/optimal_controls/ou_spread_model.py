@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-from numpy import sqrt, exp
+from numpy import sqrt, exp, finfo
 
 from .ou_spread_model_parameters import OU_Spread_Model_Parameters
 
@@ -80,7 +80,7 @@ class OU_Spread_Model:
         #else:
         
         # Machine epsilon to prevent zero division
-        eps = np.finfo(float).eps
+        eps = finfo(float).eps
         
         b   = exp(2*kappa*(tau)/ (a+eps) )
         t_1 = 1.0/((2*eta**2)*((1-a)-(1+a)*exp((2*kappa*(tau))/ (a+eps)   )))
@@ -141,7 +141,7 @@ class OU_Spread_Model:
         # Solve optimal solution "h"
         
         # Machine epsilon to prevent division by zero
-        eps = np.finfo(float).eps
+        eps = finfo(float).eps
         
         h = (1.0/(1.0-gamma + eps))*(b + 2*x*a - (kappa*(x-theta))/(eta**2 + eps) + (rho*sigma_B)/(eta+eps) + 0.5)    
         

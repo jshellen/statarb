@@ -42,20 +42,29 @@ ax[1].legend()
 from src.optimal_controls.ou_params import Ornstein_Uhlenbeck_Parameters
 from src.optimal_controls.ou_spread_model_parameters import OU_Spread_Model_Parameters
 
+# Estimate spread parameters
 params  = Ornstein_Uhlenbeck_Parameters()
-
 success = params.estimate_using_ols(A,B,dt)
 if(success):
     print(params)
-
-
+else:
+    print('Failed to estimate model parameters!')
+    
+# Create trading model parameters
 nominal  = 1000000
 symbol_A = 'A'
 symbol_B = 'B'
 horizon  = None
 risk_tol = 0
 max_leverage = 5
+
 model_params = OU_Spread_Model_Parameters(nominal, symbol_A, symbol_B, horizon, risk_tol, max_leverage)
+
+#%%
+
+from src.optimal_controls.ou_spread_model import OU_Spread_Model
+
+
 
 
 

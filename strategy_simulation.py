@@ -65,3 +65,16 @@ from utils.plot_utils import plot_optimal_solution
 
 plot_optimal_solution(X,ou_params,model_params)
 
+
+
+
+
+
+
+
+
+
+
+
+
+

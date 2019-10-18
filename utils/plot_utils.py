@@ -9,30 +9,15 @@ import matplotlib.pyplot as plt
 from mpl_toolkits.axes_grid1 import make_axes_locatable
 
 
-def find_nearest_vaue(array,value):
-   
-    n = len(array)
-    if (value < array[0]):
-        return -1
-    elif (value > array[n-1]):
-        return n
-    jl = 0
-    ju = n-1
-    while (ju-jl > 1):
-        jm=(ju+jl) >> 1
-        if (value >= array[jm]):
-            jl=jm
-        else:
-            ju=jm
-    if (value == array[0]):
-        return 0
-    elif (value == array[n-1]):
-        return n-1
-    else:
-        return jl
+def find_nearest(array, value):
+    
+    array = np.asarray(array)
+    idx   = (np.abs(array - value)).argmin()
+    
+    return idx, array[idx]
     
 
-def plot_optimal_solution(X,ou_params,model_params):
+def plot_optimal_solution(X,ou_params,model_params,N_points=200):
 
     eta   = ou_params.eta
     theta = ou_params.theta
@@ -41,22 +26,25 @@ def plot_optimal_solution(X,ou_params,model_params):
     rcParams['axes.titlepad'] = 20 
     
     # Compute optimal solution over a (t,X_t) grid
-    taus = np.linspace(1,0.001,200)
-    xs   = np.linspace(theta - 1.5*eta,theta + 1.5*eta,200)
+    taus = np.linspace(1,0.001,N_points)
+    xs   = np.linspace(theta - 1.5*eta,theta + 1.5*eta,N_points)
     hs   = np.zeros((len(taus),len(xs)))
-    x_ix = []
     for i,tau in enumerate(taus):
-        c = find_nearest_vaue(xs,X[i])
-        x_ix.append(c)
         for j,x in enumerate(xs):
             opt_sol = OU_Spread_Model.solve_allocation(ou_params,model_params,x,tau)
             hs[i,j] = opt_sol.alloc_a_pct_trunc
     
-    
+    # Plot the spread with the optimal solution
+    t_x  = np.linspace(1,0.001,len(X))
+    data = {}
+    for i in range(0,len(X)):
+        ix_y,v_y = find_nearest(taus,t_x[i])
+        ix_x,v_x = find_nearest(xs,X[i])
+        data.update({ix_y:ix_x})
     fig,ax = plt.subplots(figsize=(7,7))
     
     # Plot spread path as yellow squares
-    ax.plot(x_ix,range(0,len(xs)),color='black',lw=3)
+    ax.plot(data.values(),data.keys(),color='black',lw=3)
     
     # Plot heatmap of the optimal solution
     im_1 = ax.imshow(hs, cmap = plt.cm.winter)  

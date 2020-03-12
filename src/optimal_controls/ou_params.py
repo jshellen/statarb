@@ -1,50 +1,40 @@
 # -*- coding: utf-8 -*-
 
-from pandas.core.frame  import DataFrame
+from pandas.core.frame import DataFrame
 from pandas.core.series import Series
-from pandas             import concat
-from scipy.stats.stats  import pearsonr 
-from numpy              import log, sqrt, ndarray
+from pandas import concat
+from scipy.stats.stats import pearsonr
+from numpy import log, sqrt, ndarray
 
 from .estimate_ou_params import estimate_ou_parameters
 
-NONE_TYPE = type(None)
 
-class Ornstein_Uhlenbeck_Parameters:
-    """
-    Encapsulates Ornstein Uhlenbeck process parameters.
-    
-    """
-    def __init__(self,kappa=None,theta=None,eta=None,sigma_B=None,rho=None):
-        
-        if(not isinstance(kappa,NONE_TYPE)):
-            if(not isinstance(kappa,float)):
-                raise TypeError(f'Kappa has to be float instead of {type(kappa)}!')
-                
-        if(not isinstance(theta,NONE_TYPE)):
-            if(not isinstance(theta,float)):
-                raise TypeError('theta has to be float!')
-                
-        if(not isinstance(eta,NONE_TYPE)):
-            if(not isinstance(eta,float)):
-                raise TypeError('eta has to be float!')
-                
-        if(not isinstance(sigma_B,NONE_TYPE)):
-            if(not isinstance(sigma_B,float)):
-                raise TypeError('sigma_B has to be float!')
-                    
-        if(not isinstance(rho,NONE_TYPE)):
-            if(not isinstance(rho,float)):
-                raise TypeError('rho has to be float!')
-                
+class OrnsteinUhlenbeckProcessParameters:
+
+    def __init__(self, kappa, theta, eta, sigma_b, rho):
+
+        if not isinstance(kappa, (int, float)):
+            raise TypeError('kappa has to be type of <int> or <float>.')
+
+        if not isinstance(theta, (int, float)):
+            raise TypeError('theta has to be type of <int> or <float>.')
+
+        if not isinstance(eta, (int, float)):
+            raise TypeError('eta has to be type of <int> or <float>.')
+
+        if not isinstance(sigma_b, (int, float)):
+            raise TypeError('sigma_b has to be type of <int> or <float>.')
+
+        if not isinstance(rho, (int, float)):
+            raise TypeError('rho has to be type of <int> or <float>.')
+
         # Initialize values to none
-        self.m_eta     = eta
-        self.m_sigma_B = sigma_B
-        self.m_rho     = rho
-        self.m_theta   = theta
-        self.m_kappa   = kappa
-    
-    
+        self.m_eta = eta
+        self.m_sigma_b = sigma_b
+        self.m_rho = rho
+        self.m_theta = theta
+        self.m_kappa = kappa
+
     @property
     def kappa(self):
         """
@@ -74,63 +64,58 @@ class Ornstein_Uhlenbeck_Parameters:
         return self.m_eta
     
     @property
-    def sigma_B(self):
+    def sigma_b(self):
         """
         Volatility of asset "B"
         """
-        return self.m_sigma_B
-    
-    
-    def estimate_using_ols(self,A_data,B_data,dt):
-        """
-        Estimates Ornstein Uhlenbeck stochastic process parameters from price
-        series using ordinary least squares estimation.
-        
-        If the estimation is successfull the method returns 1, else 0.
-        
-        """
-        
-        if(not isinstance(A_data,(DataFrame,Series,ndarray))):
-            raise TypeError('Price data A needs to be type of pandas.core.frame.DataFrame, pandas.core.series.Series or numpy.ndarray')
+        return self.m_sigma_b
 
-        if(not isinstance(B_data,(DataFrame,Series,ndarray))):
-            raise TypeError('Price data B needs to be type of pandas.core.frame.DataFrame, pandas.core.series.Series or numpy.ndarray')
+    def ols_parameter_estimation(self, a_data, b_data, dt):
+
+        if not isinstance(a_data, (DataFrame, Series, ndarray)):
+            raise TypeError('a_data has invalid data type')
+
+        if not isinstance(b_data, (DataFrame, Series, ndarray)):
+            raise TypeError('b_data has invalid data type')
         
-        if(not isinstance(dt,float)):
-            raise TypeError('Delta time has to be type of float!')
+        if not isinstance(dt, (int, float)):
+            raise TypeError('dt has to be type of float.')
         
-        if(dt<=0):
+        if dt <= 0:
             raise ValueError('Delta time has to be positive and non-zero!')
         
-        if(isinstance(A_data,Series)):
-            A_data = A_data.to_frame(name=0)
+        if isinstance(a_data, Series):
+            a_data = a_data.to_frame(name=0)
             
-        if(isinstance(B_data,Series)):
-            B_data = B_data.to_frame(name=0)
+        if isinstance(b_data, Series):
+            b_data = b_data.to_frame(name=0)
 
-        if(isinstance(A_data,ndarray)):
-            A_data = DataFrame(data = A_data)
+        if isinstance(a_data, ndarray):
+            a_data = DataFrame(data=a_data)
             
-        if(isinstance(B_data,ndarray)):
-            B_data = DataFrame(data = B_data)
+        if isinstance(b_data, ndarray):
+            b_data = DataFrame(data=b_data)
         
         try:
                 
-            # Compute spread
-            spread = log(A_data) - log(B_data)
+            # Compute logarithmic spread level
+            x = log(a_data) - log(b_data)
             
             # Estimate OU parameters
-            pars = estimate_ou_parameters(spread.values,dt)
+            pars = estimate_ou_parameters(x.values, dt)
             
             self.m_kappa = pars[0]
             self.m_theta = pars[1]
-            self.m_eta   = pars[2]        
-            
-            a = B_data.pct_change(1)
-            b = spread.diff(1)
-            c = concat([a,b],axis=1).dropna()
-            self.m_rho = pearsonr(c.iloc[:,0],c.iloc[:,1])[0]
-            self.m_sigma_B = a.std().values[0]*sqrt(1.0/dt)
+            self.m_eta = pars[2]
+
+            # Compute correlation between asset a and spread level
+            a = b_data.pct_change(1)
+            b = x.diff(1)
+            c = concat([a, b], axis=1).dropna()
+            self.m_rho = pearsonr(c.iloc[:, 0], c.iloc[:, 1])[0]
+
+            # Compute scaled volatility for asset b
+            self.m_sigma_b = a.std().values[0]*sqrt(1.0/dt)
         
             return 1
         
@@ -142,23 +127,23 @@ class Ornstein_Uhlenbeck_Parameters:
     
     def __str__(self):
         
-        if(isinstance(self.kappa,float)):
-            kappa = round(self.kappa,2)
+        if isinstance(self.kappa, float):
+            kappa = round(self.kappa, 2)
         else:
             kappa = ''
         
-        if(isinstance(self.theta,float)):
-            theta = round(self.theta,2)
+        if isinstance(self.theta, float):
+            theta = round(self.theta, 2)
         else:
             theta = ''
         
-        if(isinstance(self.rho,float)):
-            rho = round(self.rho,2)
+        if isinstance(self.rho, float):
+            rho = round(self.rho, 2)
         else:
             rho = ''
         
-        if(isinstance(self.eta,float)):
-            eta = round(self.eta,2)
+        if isinstance(self.eta, float):
+            eta = round(self.eta, 2)
         else:
             eta = ''
         

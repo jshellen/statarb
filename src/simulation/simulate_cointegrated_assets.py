@@ -1,12 +1,7 @@
-# -*- coding: utf-8 -*-
-"""
-Created on Tue Sep 24 18:06:45 2019
 
-@author: helleju
-"""
 import numpy as np
 
-def simulate_b(N_sim,N_steps,B_0,mu,sigma_B,dt):
+def simulate_b(N_sim, N_steps,B_0,mu,sigma_B,dt):
     """
     
     Simulate asset B

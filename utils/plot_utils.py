@@ -3,7 +3,7 @@
 #%%
 import numpy as np
 
-from src.optimal_controls.ou_spread_model import OU_Spread_Model
+from src.optimal_controls.ou_spread_model import OUSpreadModelSolver
 
 import matplotlib.pyplot as plt
 from mpl_toolkits.axes_grid1 import make_axes_locatable
@@ -44,7 +44,7 @@ def plot_optimal_solution(X,ou_params,model_params,N_points=200):
     fig,ax = plt.subplots(figsize=(7,7))
     
     # Plot spread path as yellow squares
-    ax.plot(data.values(),data.keys(),color='black',lw=3)
+    ax.plot(list(data.values()),list(data.keys()),color='black',lw=3)
     
     # Plot heatmap of the optimal solution
     im_1 = ax.imshow(hs, cmap = plt.cm.winter)  

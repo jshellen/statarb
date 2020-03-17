@@ -22,7 +22,7 @@ class MultiSpreadModelParameters:
         for i in range(0, len(self.m_kappa)):
             self.m_kappa[i] = - self.m_beta[i] * self.m_delta[i]
 
-        self.m_sigma_1 = np.matmul(np.matmul(np.diag(self.m_sigma), self.m_rho), np.diag(self.m_sigma))
+        self.m_sigma_1 = np.matmul(np.matmul(np.diag(self.m_sigma.flatten()), self.m_rho), np.diag(self.m_sigma.flatten()))
 
         self.m_sigma_2 = np.zeros_like(self.m_sigma_1)
         for i in range(0, self.m_sigma_1.shape[0]):
@@ -44,8 +44,11 @@ class MultiSpreadModelParameters:
 
         self.m_theta = np.zeros_like(self.m_delta)
         for i in range(0, self.m_sigma_1.shape[0]):
-            self.m_theta[i] = (self.m_beta[i] + self.m_mu_0 + self.m_beta[i] * self.m_mu[i]
-                               - 0.5 * (self.m_sigma_0**2 + self.m_beta[i] * self.m_sigma[i]**2))/(self.m_beta[i]*self.m_delta[i])
+            #self.m_theta[i] = a[i]
+             self.m_theta[i] = (self.m_beta[i] + self.m_mu_0 + self.m_beta[i] * self.m_mu[i]
+                                - 0.5 * (self.m_sigma_0**2 + self.m_beta[i] * self.m_sigma[i]**2))/(self.m_beta[i]*self.m_delta[i])
+
+        print(" ")
 
 
 class MultiSpreadModelSolver:
@@ -111,7 +114,7 @@ class MultiSpreadModelSolver:
 
         dt = T / float(n_step)
 
-        b_T = np.zeros(params.m_rho.shape[0])
+        b_T = np.zeros(params.m_rho.shape[0]).reshape(-1, 1)
 
         b_t = {}
         b_t.update({n_step: b_T})
@@ -122,18 +125,18 @@ class MultiSpreadModelSolver:
         ) + params.m_sigma_3
 
         A_t = params.m_gamma/(1.0 - params.m_gamma) * np.matmul(
-            np.matmul(params.m_delta,
-                      np.linalg.inv(params.m_sigma_1)), np.diag(params.m_sigma_2)
+            np.matmul(np.diag(params.m_delta.flatten()),
+                      np.linalg.inv(params.m_sigma_1)), params.m_sigma_2
         ) - np.diag(params.m_kappa)
 
         P_t = params.m_gamma/(1.0 - params.m_gamma) * np.matmul(
             np.matmul(params.m_sigma_2.T, np.linalg.inv(params.m_sigma_1)
                       ), params.m_mu
-        ) + np.matmul(np.diag(params.m_kappa), params.m_theta)
+        ) + np.matmul(np.diag(params.m_kappa.flatten()), params.m_theta)
 
         O_t = params.m_gamma/(1.0 - params.m_gamma) * np.matmul(
-            np.matmul(params.m_delta,
-                      np.linalg.inv(params.m_sigma_1)), np.diag(params.m_mu) )
+            np.matmul(np.diag(params.m_delta.flatten()),
+                      np.linalg.inv(params.m_sigma_1)), params.m_mu )
 
         # Compute b_t
         b_t_ = b_T
@@ -188,12 +191,12 @@ class MultiSpreadModelSolver:
 
         A_u = params.m_gamma/(1.0-params.m_gamma) * np.matmul(
                     np.matmul(params.m_sigma_2.T,
-                              np.linalg.inv(params.m_sigma_1)), np.diag(params.m_delta)
+                              np.linalg.inv(params.m_sigma_1)), np.diag(params.m_delta.flatten())
         ) - np.diag(params.m_kappa)
 
         P_u = params.m_gamma/(2.0 * (1.0-params.m_gamma)) * np.matmul(
-            np.matmul(np.diag(params.m_delta),
-                      np.linalg.inv(params.m_sigma_1)), np.diag(params.m_delta))
+            np.matmul(np.diag(params.m_delta.flatten()),
+                      np.linalg.inv(params.m_sigma_1)), np.diag(params.m_delta.flatten()))
 
         # Compute C_t
         c_t_ = c_T
@@ -203,6 +206,7 @@ class MultiSpreadModelSolver:
                  - np.matmul(np.matmul(c_t_, Q_u), c_t_) - P_u
 
             c_t_ = c_t_ + dc_t * dt
+
 
             c_t.update({i: c_t_})
 
@@ -230,7 +234,7 @@ class MultiSpreadModel:
 
         A = 1.0/(1.0 - self.m_params.m_gamma) * np.matmul(
             np.linalg.inv(self.m_params.m_sigma_1),
-            (self.m_params.m_mu + np.matmul(np.diag(self.m_params.m_delta), z)))
+            (self.m_params.m_mu + np.matmul(np.diag(self.m_params.m_delta.flatten()), z)))
 
         B = 1.0/(1.0 - self.m_params.m_gamma) * np.matmul(np.matmul(np.linalg.inv(self.m_params.m_sigma_1),
                       self.m_params.m_sigma_2), 2*np.matmul(c_t, z) + b_t)
@@ -275,7 +279,7 @@ class MultiSpreadModel:
 
         fig, ax = plt.subplots(figsize=(6, 6))
         for i in range(0, self.m_params.m_rho.shape[0]):
-                ax.plot([c_t[i] for k, c_t in self.m_b_t.items()])
+            ax.plot([c_t[i] for k, c_t in self.m_b_t.items()])
         plt.show()
 
 

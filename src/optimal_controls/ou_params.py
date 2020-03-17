@@ -6,7 +6,7 @@ from pandas import concat
 from scipy.stats.stats import pearsonr
 from numpy import log, sqrt, ndarray
 
-from .estimate_ou_params import estimate_ou_parameters
+from src.estimation.estimate_ou_params import estimate_ou_parameters
 
 
 class OrnsteinUhlenbeckProcessParameters:

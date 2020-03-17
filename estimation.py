@@ -2,111 +2,59 @@ import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 from src.data.data_handler import DataHandler
-from src.optimal_controls.estimation.coint_johansen import Johansen
-from src.optimal_controls.estimation.parameter_estimation import estimate_ou_parameters
-from src.optimal_controls.z_spread_model import (
-    MultiSpreadModelParameters,
-    MultiSpreadModelSolver
+
+from src.optimal_controls.z_spread_model_parameters import  (
+    ZSpreadModelParameters
 )
+
+from src.optimal_controls.z_spread_model_solver import (
+    ZSpreadModelSolver
+)
+
 
 def main():
 
-    symbols = ['BNK.PA', 'UTI.PA', 'BRE.PA'] #['MSE.PA', 'BNK.PA', 'UTI.PA', 'BRE.PA', 'HLT.PA']
+    symbols = ['EXS1.DE', 'EXS2.DE', 'EXS3.DE']
 
     data = DataHandler.download_historical_closings(symbols).dropna()
 
-    s_i = data
-    s_0 = np.exp(np.log(data).mean(axis=1)).to_frame()
-    s_0.columns = ['mean']
+    data = data.loc[data.index.year > 2016]
+
+    ln_s_0 = np.log(data['EXS3.DE']).values  #.mean(axis=1).values
+    ln_s_i = np.log(data[['EXS1.DE', 'EXS2.DE']]).values
 
     fig, ax = plt.subplots(figsize=(6, 3))
-    ax.plot(s_0, color='red')
-    ax.plot(s_i, color='blue', alpha=0.5)
+    ax.plot(ln_s_0, color='red')
+    ax.plot(ln_s_i, color='blue', alpha=0.5)
     plt.show()
 
-    mu_0 = s_0.pct_change(1).dropna().mean()
-    mu_i = s_i.pct_change(1).mean(axis=0).values.reshape(-1, 1)
-    sigma_0 = s_0.pct_change(1).dropna().std() * np.sqrt(250)
-    sigma_i = s_i.pct_change(1).dropna().std().values.reshape(-1, 1) * np.sqrt(250)
+    params = ZSpreadModelParameters.estimate_from_ln_prices(ln_s_0, ln_s_i, gamma=-10)
 
-    s_ = pd.concat([s_0, s_i], axis=1)
+    model = ZSpreadModelSolver.solve(params, 50, 1000)
 
-    rho_ = s_.pct_change(1).dropna().corr().values
-    rho_0 = rho_[1:, 0].reshape(-1, 1)
-    rho_i = rho_[1:, 1:]
-
-    b = np.zeros(len(sigma_i)).reshape(-1, 1)
-    a = np.zeros(len(sigma_i)).reshape(-1, 1)
-    betas = np.zeros(len(sigma_i)).reshape(-1, 1)
-    kappas = np.zeros(len(sigma_i)).reshape(-1, 1)
-    z_spreads = []
-    for i, symbol in enumerate(symbols):
-
-        # Estimate beta parameter
-        y = pd.concat([np.log(s_0), np.log(s_i[symbol])], axis=1)
-        estimator = Johansen(y, model=2, significance_level=0)
-        e_, r = estimator.johansen()
-        e = e_[:, 0] / e_[0, 0]
-        betas[i] = e[1]
-
-        # Estimate kappa parameter
-        z = y.dot(e)
-        z_spreads.append(pd.DataFrame(index=y.index, data=z, columns=[symbol]))
-        k, theta, sigma_z = estimate_ou_parameters(z.values, 1/250)
-        kappas[i] = k
-        a[i] = theta
-
-        print("The first cointegrating relation: {}".format(e))
-        fig, ax = plt.subplots(2, 1, figsize=(6, 3))
-        ax[0].plot(z)
-        ax[1].plot(np.log(s_0), color='red')
-        ax[1].plot(np.log(s_i[symbol]), color='blue', label = symbol)
-        plt.legend()
-        plt.show()
-
-    z_spreads = pd.concat(z_spreads, axis=1)
-
-
-    deltas = np.zeros(len(sigma_i)).reshape(-1, 1)
-    for i, symbol in enumerate(symbols):
-        deltas[i] = kappas[i]/(-betas[i])
-
-    params = MultiSpreadModelParameters(-1000, rho_i, rho_0, sigma_0, sigma_i, mu_0, mu_i, betas, deltas, b, a)
-
-    model = MultiSpreadModelSolver.solve(params, 50, 10000)
-
-    #model.plot_b_t()
     #model.plot_c_t()
 
-    #z_spreads.plot()
-    #plt.show()
+    holding = np.zeros_like(ln_s_i)
+    z = np.zeros_like(ln_s_i)
+    for i in range(0, len(data)):
+        z_t = np.zeros((2, 1))
+        for j in range(0, 2):
+            z_t[j, 0] = 0*params.m_a[j] + ln_s_0[i] + params.m_beta[j] * ln_s_i[i, j]
+        pi = model.optimal_portfolio(z_t, 25)
+        z[i, :] = z_t.reshape(1, -1)
+        holding[i, :] = pi.reshape(1, -1)
 
-    result = {}
-    for date in z_spreads.index:
+    dln_s_i = np.diff(ln_s_i, 1, axis=0)
+    pnl = holding[0:-1, :] * dln_s_i
 
-        z_ = z_spreads.loc[date].values.reshape(-1, 1)
-
-        pi = model.optimal_portfolio(z_, 10).flatten()
-        pos = {}
-        pos.update({symbols[0]: pi[0]})
-        pos.update({symbols[1]: pi[1]})
-        pos.update({symbols[2]: pi[2]})
-        #pos.update({symbols[3]: pi[3]})
-        result.update({date: pos})
-
-    result = pd.DataFrame.from_dict(result, orient='index')
-
-    pnl = data.pct_change(1) * result.shift(1)
-
-    result.plot()
+    fig, ax = plt.subplots(4, 1, figsize=(8, 6))
+    ax[0].plot(ln_s_i, color='blue')
+    ax[0].plot(ln_s_0, color='red')
+    ax[1].plot(z[:, 0])
+    ax[2].plot(holding)
+    ax[3].plot(np.cumsum(pnl, axis=0))
+    ax[3].plot(np.sum(np.cumsum(pnl, axis=0), axis=1), color='black')
     plt.show()
-
-    pnl.cumsum().plot()
-    plt.show()
-
-    pnl.sum(axis=1).cumsum().plot()
-    plt.show()
-
 
     print(" ")
 

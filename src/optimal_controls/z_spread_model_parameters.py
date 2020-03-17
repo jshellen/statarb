@@ -74,7 +74,7 @@ class ZSpreadModelParameters:
         # Estimate annual drift rates
         mu = np.zeros((n_assets, 1))
         for i in range(0, n_assets):
-            mu[i] = 250 * np.mean(np.diff(ln_s_i, 1, axis=0))
+            mu[i] = 250 * np.mean(np.diff(ln_s_i[:, i], 1, axis=0))
 
         # Estimate annual volatilities
         sigma = np.zeros((n_assets, 1))

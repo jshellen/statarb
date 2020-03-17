@@ -23,13 +23,15 @@ def main():
 
     params = {
         'A': SystemParams(s_0=100, rho_0=0.7, mu_i=0.25, sigma_i=0.25, beta_i=-10, delta_i=1, a=0, b=0),
-        'B': SystemParams(s_0=100, rho_0=0.7, mu_i=0.25, sigma_i=0.15, beta_i=-15, delta_i=1, a=0, b=0),
-        'C': SystemParams(s_0=100, rho_0=0.7, mu_i=0.25, sigma_i=0.10, beta_i=-20, delta_i=1, a=0, b=0),
+        'B': SystemParams(s_0=100, rho_0=0.7, mu_i=0.25, sigma_i=0.25, beta_i=-10, delta_i=1, a=0, b=0),
+        'C': SystemParams(s_0=100, rho_0=0.7, mu_i=0.25, sigma_i=0.25, beta_i=-10, delta_i=1, a=0, b=0),
     }
 
     ln_s_0, ln_s_i, z = simulate_benchmark_cointegrated_system(params, 100, 0, 0.15, 1/250, corr_mat, 10000)
 
     params = ZSpreadModelParameters.estimate_from_ln_prices(ln_s_0, ln_s_i)
+
+    print(" ")
 
     model = ZSpreadModelSolver.solve(params, 50, 1000)
 
@@ -47,10 +49,12 @@ def main():
     ax_0_2 = ax[0].twinx()
     ax_0_2.plot(ln_s_0[0:n_calc], color='red')
     ax[1].plot(z[0:n_calc, 0])
-    ax[2].plot(holding[0:n_calc, 0])
+    ax[2].plot(holding[0:n_calc, :])
     ax[3].plot(np.cumsum(pnl, axis=0)[0:n_calc, :])
     ax[3].plot(np.sum(np.cumsum(pnl, axis=0)[0:n_calc, :],axis=1), color='black')
     plt.show()
+
+
 
 if __name__ == '__main__':
     main()

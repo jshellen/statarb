@@ -70,4 +70,4 @@ def estimate_ln_coint_params(x, y, dt):
 
     delta = kappa/(-beta)
 
-    return delta, beta, kappa
+    return delta, beta, kappa, theta

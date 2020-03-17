@@ -1,18 +1,19 @@
 import numpy as np
+import pandas as pd
 import matplotlib.pyplot as plt
-import statsmodels.api as sm
 
 from src.simulation.simulate_cointegrated_assets import (
     SystemParams,
     simulate_benchmark_cointegrated_system
 )
 
-from src.estimation.parameter_estimation import (
-    estimate_ln_coint_params
+from src.optimal_controls.z_spread_model_parameters import  (
+    ZSpreadModelParameters
 )
 
-from src.estimation.coint_johansen import Johansen
-
+from src.optimal_controls.z_spread_model_solver import (
+    ZSpreadModelSolver
+)
 
 def main():
 
@@ -21,36 +22,35 @@ def main():
                          [0.6, 0.6, 1.0]])
 
     params = {
-        'A': SystemParams(s_0=100, rho_0=0.5, mu_i=0.25, sigma_i=0.25, beta_i=-30, delta_i=2, a=0, b=0),
-        'B': SystemParams(s_0=100, rho_0=0.7, mu_i=0.00, sigma_i=0.15, beta_i=-15, delta_i=1, a=0, b=0),
-        'C': SystemParams(s_0=100, rho_0=0.5, mu_i=0.00, sigma_i=0.10, beta_i=-20, delta_i=1, a=0, b=0),
+        'A': SystemParams(s_0=100, rho_0=0.7, mu_i=0.25, sigma_i=0.25, beta_i=-10, delta_i=1, a=0, b=0),
+        'B': SystemParams(s_0=100, rho_0=0.7, mu_i=0.25, sigma_i=0.15, beta_i=-15, delta_i=1, a=0, b=0),
+        'C': SystemParams(s_0=100, rho_0=0.7, mu_i=0.25, sigma_i=0.10, beta_i=-20, delta_i=1, a=0, b=0),
     }
 
     ln_s_0, ln_s_i, z = simulate_benchmark_cointegrated_system(params, 100, 0, 0.15, 1/250, corr_mat, 10000)
 
-    #fig, ax = plt.subplots(3, 1, figsize=(8, 4))
-    #ax[0].plot(ln_s_i[:, 0], color='blue')
-    #ax[1].plot(ln_s_0 + params['A'].beta_i*ln_s_i[:, 0], color='green')
-    #ax[2].plot(z[:, 0])
-    #plt.show()
+    params = ZSpreadModelParameters.estimate_from_ln_prices(ln_s_0, ln_s_i)
 
-    #ols_est = sm.OLS(ln_s_0.reshape(-1, 1), sm.add_constant(ln_s_i[:, 0].reshape(-1, 1))).fit()
-    #print(ols_est.summary())
+    model = ZSpreadModelSolver.solve(params, 50, 1000)
 
-    #estimator = Johansen(np.concatenate([ln_s_0.reshape(-1, 1), ln_s_i[:, 0].reshape(-1, 1)], axis=1), model=2, significance_level=0)
-    #e_, r = estimator.johansen()
-    #e = e_[:, 0] / e_[0, 0]
 
-    delta, beta, kappa = estimate_ln_coint_params(ln_s_0, ln_s_i[:, 0], 1/250)
+    n_calc = 500
+    holding = np.zeros_like(ln_s_i)
+    for i in range(0, n_calc):
+        holding[i, :] = model.optimal_portfolio(z[i, :].reshape(-1, 1), 25).reshape(1, -1)
 
-    print(beta, kappa, delta)
+    dln_s_i = np.diff(ln_s_i, 1, axis=0)
+    pnl = holding[0:-1, :]*dln_s_i
 
-    #print(" ")
-
-    delta, beta, kappa = estimate_ln_coint_params(ln_s_0, ln_s_i[:, 1], 1/250)
-
-    print(beta, kappa, delta)
-
+    fig, ax = plt.subplots(4, 1, figsize=(8, 6))
+    ax[0].plot(ln_s_i[0:n_calc, 0], color='blue')
+    ax_0_2 = ax[0].twinx()
+    ax_0_2.plot(ln_s_0[0:n_calc], color='red')
+    ax[1].plot(z[0:n_calc, 0])
+    ax[2].plot(holding[0:n_calc, 0])
+    ax[3].plot(np.cumsum(pnl, axis=0)[0:n_calc, :])
+    ax[3].plot(np.sum(np.cumsum(pnl, axis=0)[0:n_calc, :],axis=1), color='black')
+    plt.show()
 
 if __name__ == '__main__':
     main()

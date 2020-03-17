@@ -70,7 +70,7 @@ class SystemParams:
         return -self.beta_i*self.delta_i
 
 
-def simulate_benchmark_cointegrated_system(parameters, s0_0, mu_0, sigma_0, corr_mat, n_step):
+def simulate_benchmark_cointegrated_system(parameters, s0_0, mu_0, sigma_0, dt, corr_mat, n_step):
 
     if not isinstance(parameters, dict):
         raise ValueError('parameters have to be a dictionary.')
@@ -103,22 +103,22 @@ def simulate_benchmark_cointegrated_system(parameters, s0_0, mu_0, sigma_0, corr
 
     ln_s_0[0] = np.log(s0_0)
     for j in range(1, n_step):
-        d_ln_s_0 = (mu_0 - 0.5*sigma_0**2)*(1/500) + sigma_0*np.sqrt(1/500)*db_0[j]
+        d_ln_s_0 = (mu_0 - 0.5*sigma_0**2)*dt + sigma_0*np.sqrt(dt)*db_0[j]
         ln_s_0[j] = ln_s_0[j-1] + d_ln_s_0
 
     for i, (symbol, params) in enumerate(parameters.items()):
 
         z[0, i] = params.theta(mu_0, sigma_0)
         for j in range(1, n_step):
-            dz = -params.beta_i*params.delta_i*(params.theta(mu_0, sigma_0) - z[j-1, i])*(1/500)\
-                 + sigma_0*np.sqrt(1/500)*db_0[j]\
-                 + params.beta_i*params.sigma_i*np.sqrt(1/500)*db_i[j, i]
+            dz = -params.beta_i*params.delta_i*(params.theta(mu_0, sigma_0) - z[j-1, i])*dt\
+                 + sigma_0*np.sqrt(dt)*db_0[j]\
+                 + params.beta_i*params.sigma_i*np.sqrt(dt)*db_i[j, i]
             z[j, i] = z[j-1, i] + dz
 
         ln_s_i[0, i] = (z[0, i] - params.a - params.b - ln_s_0[0])/params.beta_i
         for j in range(1, n_step):
-            d_ln_s_i = (params.mu_i - 0.5*params.sigma_i**2 + params.delta_i*z[j, i])*(1/500) \
-                       + params.sigma_i*np.sqrt(1/500)*db_i[j, i]
+            d_ln_s_i = (params.mu_i - 0.5*params.sigma_i**2 + params.delta_i*z[j-1, i])*dt \
+                       + params.sigma_i*np.sqrt(dt)*db_i[j, i]
             ln_s_i[j, i] = ln_s_i[j-1, i] + d_ln_s_i
 
     return ln_s_0, ln_s_i, z

@@ -15,7 +15,7 @@ class Test_OU_Spread_Model(TestCase):
     
     def test_parameter_fit(self):
         
-        from src.estimation.estimate_ou_params import estimate_ou_parameters
+        from src.estimation.parameter_estimation import estimate_ou_parameters
         import numpy as np
         
         

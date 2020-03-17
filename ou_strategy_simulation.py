@@ -4,7 +4,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 from src.optimal_controls.ou_params import OrnsteinUhlenbeckProcessParameters
 from src.optimal_controls.ou_spread_model_parameters import OUSpreadModelStrategyParameters
-from src.simulation.simulate_cointegrated_assets import simulate_cointegrated_assets
+from src.simulation.simulate_cointegrated_assets import simulate_ou_spread
 from src.simulation.simulate_pairs_trading import simulate_strategy
 
 

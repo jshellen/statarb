@@ -10,7 +10,7 @@ from ..portfolio.trade import Trade
 from ..optimal_controls.ou_spread_model import (
     OUSpreadModelSolver
 )
-from ..simulation.simulate_cointegrated_assets import simulate_cointegrated_assets
+from ..simulation.simulate_cointegrated_assets import simulate_ou_spread
 
 
 def compute_rebalancing_amount(target_nominal, price, contract, portfolio):
@@ -70,7 +70,7 @@ def simulate_pairs_trading(model_parameters, strategy_parameters, n_steps):
     contract_b = Contract(strategy_parameters.symbol_b, 'F', 20)
 
     # Simulate prices
-    a, b, s = simulate_cointegrated_assets(1, n_steps, 100, 0,
+    a, b, s = simulate_ou_spread(1, n_steps, 100, 0,
                                            model_parameters.kappa, model_parameters.theta,
                                            model_parameters.eta, model_parameters.sigma_b,
                                            1.0/250.0)

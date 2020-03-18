@@ -1,4 +1,4 @@
-
+import matplotlib.pyplot as plt
 from numpy import mean, roll, sqrt, log, std, ndarray, concatenate
 
 import statsmodels.api as sm
@@ -66,11 +66,17 @@ def estimate_ln_coint_params(x, y, dt):
 
     z_minus_a = x + beta * y
 
+    fig, ax = plt.subplots(figsize=(6, 3))
+    ax.plot(z_minus_a)
+    plt.show()
+
     a = -mean(z_minus_a)
 
     z = a + x + beta * y
 
     kappa, theta, sigma = estimate_ou_parameters(z, dt)
+
+    print('a:', a, 'kappa:', kappa, 'theta:', theta)
 
     delta = kappa/(-beta)
 

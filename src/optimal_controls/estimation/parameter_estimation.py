@@ -1,5 +1,5 @@
 
-from numpy import roll, sqrt, log, std, ndarray, concatenate
+from numpy import mean, roll, sqrt, log, std, ndarray, concatenate
 
 import statsmodels.api as sm
 
@@ -41,7 +41,7 @@ def estimate_ou_parameters(x, dt):
 
 def estimate_ln_coint_params(x, y, dt):
     """
-    Estimates log-price sensitivity to cointegrating factor:
+    Estimates log-price sensitivity "delta" w.r.t cointegrating factor:
 
     dln(S_t) = (mu - 1/2*sigma^2 + delta * Z_t)*dt + sigma*dW_t
 
@@ -57,17 +57,21 @@ def estimate_ln_coint_params(x, y, dt):
     if not isinstance(dt, float):
         raise TypeError('dt needs to be type of float!')
 
+    # Estimate cointegration factor beta_i
     estimator = Johansen(concatenate([x.reshape(-1, 1),
                                       y.reshape(-1, 1)], axis=1), model=2, significance_level=0)
     e_, r = estimator.johansen()
     e = e_[:, 0] / e_[0, 0]
-
     beta = e[1]
 
-    z = x + beta * y
+    z_minus_a = x + beta * y
+
+    a = -mean(z_minus_a)
+
+    z = a + x + beta * y
 
     kappa, theta, sigma = estimate_ou_parameters(z, dt)
 
     delta = kappa/(-beta)
 
-    return delta, beta, kappa, theta
+    return delta, beta, kappa, a

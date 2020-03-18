@@ -22,9 +22,9 @@ def main():
                          [0.6, 0.6, 1.0]])
 
     params = {
-        'A': SystemParams(s_0=100, rho_0=0.7, mu_i=0.25, sigma_i=0.25, beta_i=-10, delta_i=1, a=0, b=0),
-        'B': SystemParams(s_0=100, rho_0=0.7, mu_i=0.25, sigma_i=0.25, beta_i=-10, delta_i=1, a=0, b=0),
-        'C': SystemParams(s_0=100, rho_0=0.7, mu_i=0.25, sigma_i=0.25, beta_i=-10, delta_i=1, a=0, b=0),
+        'A': SystemParams(s_0=100, rho_0=0.7, mu_i=0.25, sigma_i=0.25, beta_i=-10, delta_i=1, a=2, b=0),
+        'B': SystemParams(s_0=100, rho_0=0.7, mu_i=0.25, sigma_i=0.25, beta_i=-10, delta_i=1, a=2, b=0),
+        'C': SystemParams(s_0=100, rho_0=0.7, mu_i=0.25, sigma_i=0.25, beta_i=-10, delta_i=1, a=2, b=0),
     }
 
     ln_s_0, ln_s_i, z = simulate_benchmark_cointegrated_system(params, 100, 0, 0.15, 1/250, corr_mat, 10000)

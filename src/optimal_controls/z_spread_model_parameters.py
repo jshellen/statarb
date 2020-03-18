@@ -47,9 +47,11 @@ class ZSpreadModelParameters:
 
         self.m_theta = np.zeros_like(self.m_delta)
         for i in range(0, self.m_sigma_1.shape[0]):
-            self.m_theta[i] = (self.m_beta[i] + self.m_mu_0 + self.m_beta[i] * self.m_mu[i]
-                               - 0.5 * (self.m_sigma_0 ** 2 + self.m_beta[i] * self.m_sigma[i] ** 2)) / (
-                                          self.m_beta[i] * self.m_delta[i])
+            #self.m_theta[i] = a[i]
+
+             self.m_theta[i] = -(self.m_b[i] + self.m_mu_0 + self.m_beta[i] * self.m_mu[i]
+                    - 0.5 * (self.m_sigma_0 ** 2 + self.m_beta[i] * self.m_sigma[i] ** 2)) / (
+                           self.m_beta[i] * self.m_delta[i])
 
     @staticmethod
     def estimate_from_ln_prices(ln_s_0, ln_s_i, gamma=-1):
@@ -88,6 +90,7 @@ class ZSpreadModelParameters:
         k = np.zeros((n_assets, 1))
         beta = np.zeros((n_assets, 1))
         for i in range(0, n_assets):
+            # delta, beta, kappa, a
             d[i], beta[i], k[i], a[i] = estimate_ln_coint_params(ln_s_0, ln_s_i[:, i], 1 / 250)
 
         return ZSpreadModelParameters(gamma, rho, rho_0, sigma_0, sigma, mu_0, mu, beta, d, b, a)

@@ -11,22 +11,23 @@ from src.optimal_controls.z_spread_model_solver import (
     ZSpreadModelSolver
 )
 
-tickers = {
-    'iShares Edge MSCI Europe Value Factor UCITS ETF EUR': 'IEVL.L',
-    'iShares Core DAX UCITS ETF (DE)': 'EXS1.DE',
-    'iShares TecDAX UCITS ETF (DE)': 'EXS2.DE',
-    'iShares MDAX UCITS ETF (DE)': 'EXS3.DE',
-    'iShares MSCI AC Far East ex-Japan UCITS ETF': 'IQQF.DE',
-    'iShares STOXX Europe 600 UCITS ETF': 'EXSA.DE',
-    'Amundi MSCI Emerging Markets UCITS ETF-C ': 'AMEM.DE'
 
-
-}
 
 def main():
 
     #symbols = list(tickers.values())
-    symbols = ['IQQF.DE', 'AMEM.DE']
+    symbols = ['SEGA.MI',
+                'DBXD.DE',
+                'EXS1.DE',
+                'EXW1.DE',
+                'DXSN.DE',
+                'CEMR.DE',
+                'DBPD.DE',
+                'DBXN.DE',
+                'EUN2.DE',
+                'EXSA.DE',
+                'D5BG.DE',
+                ]
 
     data = DataHandler.download_historical_closings(symbols).dropna()
 
@@ -36,14 +37,14 @@ def main():
     ln_s_i = np.log(data).values
 
 
-    params = ZSpreadModelParameters.estimate_from_ln_prices(ln_s_0[100:-100], ln_s_i[100:-100, :], gamma=-2)
+    params = ZSpreadModelParameters.estimate_from_ln_prices(ln_s_0[100:-500], ln_s_i[100:-500, :], gamma=-2)
 
     model = ZSpreadModelSolver.solve(params, 50, 20000)
 
 
     holding = np.zeros_like(ln_s_i)
     z = np.zeros_like(ln_s_i)
-    for i in range(0, len(data)):
+    for i in range(0, len(data)-50):
         z_t = np.zeros((len(symbols), 1))
         for j in range(0, len(symbols)):
             z_t[j, 0] = params.m_a[j] + ln_s_0[i] + params.m_beta[j] * ln_s_i[i, j]

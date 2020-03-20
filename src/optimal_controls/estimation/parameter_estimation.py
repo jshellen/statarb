@@ -1,22 +1,32 @@
 import matplotlib.pyplot as plt
-from numpy import mean, roll, sqrt, log, std, ndarray, concatenate
+import numpy as np
 
 import statsmodels.api as sm
 
 from .coint_johansen import Johansen
 
-def estimate_ou_parameters(x, dt):
+def ou_bias_correction(n):
+
+    if not isinstance(n, (int, np.int32, np.int64)):
+        raise ValueError(f'n has to be integer. {type(n)}')
+
+    return 29.70381061*(1/(n*0.0189243637761786))
+
+
+def estimate_ou_parameters_using_lsq(x, dt, bias_corretion=False):
     """
     Estimates parameters of Ornstein-Uhlenbeck style stochastic process:
 
     dX_t = kappa*(theta - X_t)*dt + sigma*dW_t
+
+    NOTE: The standard least squares estimation is very upward biased. Therefore, we need to adjust it down.
 
     :param x:
     :param dt:
     :return: kappa, theta, sigma
     """
 
-    if not isinstance(x, ndarray):
+    if not isinstance(x, np.ndarray):
         raise TypeError(f'x needs to be type of numpy.ndarray, it was {type(x)}')
     
     if not isinstance(dt, float):
@@ -25,17 +35,20 @@ def estimate_ou_parameters(x, dt):
     if dt <= 0:
         raise ValueError('Delta time has to be positive and non-zero!')
         
-    S_m = roll(x, 1)[1:]
+    S_m = np.roll(x, 1)[1:]
     S_p = x[1:]
     X = sm.add_constant(S_m)
     Y = S_p
     ols_est = sm.OLS(Y, X).fit()
     a = ols_est._results.params[1]
     b = ols_est._results.params[0]
-    kappa = -log(a)/dt
+    kappa = -np.log(a)/dt
     theta = b/(1 - a)
-    sigma = std(ols_est.resid)*(sqrt(-2*log(a)/(dt*(1-a**2))))       
-    
+    sigma = np.std(ols_est.resid)*(np.sqrt(-2*np.log(a)/(dt*(1-a**2))))
+
+    if bias_corretion:
+        kappa = kappa - ou_bias_correction(len(x))
+
     return kappa, theta, sigma
 
 
@@ -48,36 +61,41 @@ def estimate_ln_coint_params(x, y, dt):
     Dynamic Optimal Portfolios for Multiple Co-Integrated Assets
 
     """
-    if not isinstance(x, ndarray):
+    if not isinstance(x, np.ndarray):
         raise TypeError(f'x needs to be type of numpy.ndarray, it was {type(x)}')
 
-    if not isinstance(y, ndarray):
+    if not isinstance(y, np.ndarray):
         raise TypeError(f'y needs to be type of numpy.ndarray, it was {type(y)}')
 
     if not isinstance(dt, float):
         raise TypeError('dt needs to be type of float!')
 
+    if len(x.shape) != 2:
+        x = x.reshape(-1, 1)
+
+    if len(y.shape) != 2:
+        y = y.reshape(-1, 1)
+
     # Estimate cointegration factor beta_i
-    estimator = Johansen(concatenate([x.reshape(-1, 1),
-                                      y.reshape(-1, 1)], axis=1), model=2, significance_level=0)
+    estimator = Johansen(np.concatenate([x, y], axis=1), model=2, significance_level=0)
     e_, r = estimator.johansen()
     e = e_[:, 0] / e_[0, 0]
     beta = e[1]
 
+    # Compute Z_t - a_i = ln(s_0) + beta_i * ln(s_i)
     z_minus_a = x + beta * y
 
-    fig, ax = plt.subplots(figsize=(6, 3))
-    ax.plot(z_minus_a)
-    plt.show()
+    # Estimate a_i
+    a = -np.mean(z_minus_a)
 
-    a = -mean(z_minus_a)
-
+    # Recompute Z_t
     z = a + x + beta * y
 
-    kappa, theta, sigma = estimate_ou_parameters(z, dt)
+    # Estimate Ornstein-Uhlenbeck parameters
+    kappa, theta, sigma = estimate_ou_parameters_using_lsq(z, dt, True)
 
-    print('a:', a, 'kappa:', kappa, 'theta:', theta)
-
+    # Compute delta from mean-reversion speed and beta_i
     delta = kappa/(-beta)
 
     return delta, beta, kappa, a
+

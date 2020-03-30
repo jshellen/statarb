@@ -40,14 +40,22 @@ def estimate_ou_parameters_using_lsq(x, dt, bias_corretion=False):
     X = sm.add_constant(S_m)
     Y = S_p
     ols_est = sm.OLS(Y, X).fit()
+
     a = ols_est._results.params[1]
     b = ols_est._results.params[0]
-    kappa = -np.log(a)/dt
-    theta = b/(1 - a)
-    sigma = np.std(ols_est.resid)*(np.sqrt(-2*np.log(a)/(dt*(1-a**2))))
 
-    if bias_corretion:
-        kappa = kappa - ou_bias_correction(len(x))
+    if a < 0:
+        kappa = 0  # we cannot take log from negative number
+        theta = 0
+        sigma = 0
+    else:
+
+        kappa = -np.log(a)/dt
+        theta = b/(1 - a)
+        sigma = np.std(ols_est.resid)*(np.sqrt(-2*np.log(a)/(dt*(1-a**2))))
+
+        if bias_corretion:
+            kappa = kappa - ou_bias_correction(len(x))
 
     return kappa, theta, sigma, a, b
 
@@ -94,8 +102,11 @@ def estimate_z_model_params(x, y, dt):
     # Estimate Ornstein-Uhlenbeck parameters
     kappa, theta, sigma = estimate_ou_parameters_using_lsq(z, dt, True)
 
-    # Compute delta from mean-reversion speed and beta_i
-    delta = kappa/(-beta)
+    delta = None
+    if (kappa != None) and (theta != None) and (sigma != None):
+
+        # Compute delta from mean-reversion speed and beta_i
+        delta = kappa/(-beta)
 
     return delta, beta, kappa, a
 

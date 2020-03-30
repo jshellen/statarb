@@ -1,5 +1,9 @@
 import matplotlib.pyplot as plt
 import numpy as np
+<<<<<<< HEAD:ou_lsq_est.py
+=======
+import pandas as pd
+>>>>>>> a3507c187b5b0d726d1e5d3ff8642e728fccec0a:out_lsq_est.py
 
 from src.simulation.ornstein_uhlenbeck import (
     sim_ou
@@ -12,7 +16,7 @@ from src.optimal_controls.estimation.parameter_estimation import (
 
 def sample_estimation_error(kappa_true, sigma, dt, n_grid):
 
-    n_samples = 500
+    n_samples = 50
     bias_n = np.zeros(len(n_grid))
     kappa_n = np.zeros(len(n_grid))
     for i in range(0, len(n_grid)):
@@ -24,10 +28,20 @@ def sample_estimation_error(kappa_true, sigma, dt, n_grid):
             x = sim_ou(0, kappa_true, 0, sigma, dt, n_grid[i])
             # Estimate parameters
             kappa_est, theta_est, sigma_est = estimate_ou_parameters_using_lsq(x, dt)
+<<<<<<< HEAD:ou_lsq_est.py
             # Error
             bias = kappa_est - kappa_true
             bias_sum += bias
             kappa_sum += kappa_est
+=======
+
+
+            if kappa_est is not None:
+                # Error
+                bias = kappa_est - kappa_true
+                bias_sum += bias
+                kappa_sum += kappa_est
+>>>>>>> a3507c187b5b0d726d1e5d3ff8642e728fccec0a:out_lsq_est.py
         # Compute mean error
         bias_n[i] = bias_sum / float(n_samples)
         kappa_n[i] = kappa_sum / float(n_samples)
@@ -53,7 +67,7 @@ def ou_bias2(n):
 
 def main():
 
-    n_grid = np.arange(5, 250, 5)
+    n_grid = np.arange(50, 1500, 50)
 
     # Sample estimation error with different kappa parameters
     dt = 1.0/250.0

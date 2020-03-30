@@ -2,7 +2,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 from src.data.data_handler import DataHandler
-from sklearn.model_selection import KFold
+#from sklearn.model_selection import KFold
 import statsmodels.api as sm
 from src.optimal_controls.z_spread_model_parameters import  (
     ZSpreadModelParameters

@@ -49,10 +49,10 @@ def estimate_ou_parameters_using_lsq(x, dt, bias_corretion=False):
     if bias_corretion:
         kappa = kappa - ou_bias_correction(len(x))
 
-    return kappa, theta, sigma
+    return kappa, theta, sigma, a, b
 
 
-def estimate_ln_coint_params(x, y, dt):
+def estimate_z_model_params(x, y, dt):
     """
     Estimates log-price sensitivity "delta" w.r.t cointegrating factor:
 

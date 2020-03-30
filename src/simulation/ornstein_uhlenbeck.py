@@ -2,7 +2,7 @@
 import numpy as np
 
 
-def sim_ou(x_0, k, theta, sigma, dt, n_steps):
+def simulate_one_ornstein_uhlenbeck_path(x_0, k, theta, sigma, dt, n_steps):
     """
     Simulate Ornstein-Uhlenbeck process
     """
@@ -15,7 +15,7 @@ def sim_ou(x_0, k, theta, sigma, dt, n_steps):
     return x
 
 
-def ornstein_uhlenbeck(X_0, k, theta, sigma, dt, n_steps, n_paths):
+def simulate_ornstein_uhlenbeck_paths(X_0, k, theta, sigma, dt, n_steps, n_paths):
     """
     Simulate Ornstein-Uhlenbeck process
     """
@@ -23,6 +23,6 @@ def ornstein_uhlenbeck(X_0, k, theta, sigma, dt, n_steps, n_paths):
     x = np.zeros(size)
 
     for j in range(0, n_paths):
-        x[:, j] = sim_ou(X_0, k, theta, sigma, dt, n_steps)
+        x[:, j] = simulate_one_ornstein_uhlenbeck_path(X_0, k, theta, sigma, dt, n_steps)
 
     return x

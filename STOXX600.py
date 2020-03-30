@@ -47,8 +47,6 @@ def estimate_model_parameters(ln_s_0, ln_s_i):
         params = ZSpreadModelParameters.estimate_from_ln_prices(
             ln_s_0_, ln_s_i_, gamma=-2, kappa_min=1.5)
 
-
-
     return params
 
 
@@ -60,7 +58,7 @@ def main():
     ln_s_0 = ln_s_0.loc[common_index]
     ln_s_i = ln_s_i.loc[common_index]
 
-    params = ZSpreadModelParameters.estimate_from_ln_prices(ln_s_0.head(500), ln_s_i.head(500), gamma=-2, kappa_min=1.5)
+    params = ZSpreadModelParameters.estimate_from_ln_prices(ln_s_0.tail(500), ln_s_i.tail(500), gamma=-2, kappa_min=1.5)
 
     model = ZSpreadModelSolver.solve(params, 50, 50000)
 

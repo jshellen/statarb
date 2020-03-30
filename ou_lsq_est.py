@@ -1,12 +1,12 @@
 import matplotlib.pyplot as plt
 import numpy as np
-import pandas as pd
+
 from src.simulation.ornstein_uhlenbeck import (
     sim_ou
 )
 
 from src.optimal_controls.estimation.parameter_estimation import (
-    estimate_ou_parameters
+    estimate_ou_parameters_using_lsq
 )
 
 
@@ -23,7 +23,7 @@ def sample_estimation_error(kappa_true, sigma, dt, n_grid):
             # Simulate ou process
             x = sim_ou(0, kappa_true, 0, sigma, dt, n_grid[i])
             # Estimate parameters
-            kappa_est, theta_est, sigma_est = estimate_ou_parameters(x, dt)
+            kappa_est, theta_est, sigma_est = estimate_ou_parameters_using_lsq(x, dt)
             # Error
             bias = kappa_est - kappa_true
             bias_sum += bias
@@ -33,6 +33,7 @@ def sample_estimation_error(kappa_true, sigma, dt, n_grid):
         kappa_n[i] = kappa_sum / float(n_samples)
 
     return kappa_n, bias_n
+
 
 
 def ou_bias(n, dt):

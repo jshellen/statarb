@@ -1,7 +1,7 @@
 import numpy as np
 import pandas as pd
 
-from .estimation.parameter_estimation import (
+from .estimation.ou_parameter_estimation import (
     estimate_ln_coint_params
 )
 
@@ -9,7 +9,8 @@ from .estimation.parameter_estimation import (
 class ZSpreadModelParameters:
 
     def __init__(self, gamma=None, rho=None, rho_0=None, sigma_0=None, sigma=None,
-                 mu_0=None, mu=None, beta=None, delta=None, b=None, a=None, sigma_1=None, sigma_2=None, sigma_3=None,
+                 mu_0=None, mu=None, beta=None, delta=None, b=None, a=None,
+                 sigma_1=None, sigma_2=None, sigma_3=None,
                  kappa=None, theta=None, symbols=None):
 
         self.m_gamma = gamma
@@ -36,7 +37,9 @@ class ZSpreadModelParameters:
             self.m_kappa = kappa
 
         if sigma_1 is None:
-            self.m_sigma_1 = np.matmul(np.matmul(np.diag(self.m_sigma.flatten()), self.m_rho), np.diag(self.m_sigma.flatten()))
+            self.m_sigma_1 = np.matmul(
+                np.matmul(np.diag(self.m_sigma.flatten()),
+                          self.m_rho), np.diag(self.m_sigma.flatten()))
         else:
             self.m_sigma_1 = sigma_1
 
@@ -139,10 +142,10 @@ class ZSpreadModelParameters:
             sigma[i] = np.sqrt(250) * np.std(np.diff(ln_s_i_[:, i], 1, axis=0))
 
         # Estimate sigmas for riccati equations
-        sigma_1 = np.matmul(np.matmul(np.diag(sigma.flatten()), rho), np.diag(sigma.flatten()))
-
-        e_val, e_vec = np.linalg.eig(sigma_1)
-
+        sigma_1 = np.matmul(
+            np.matmul(np.diag(sigma.flatten()), rho),
+            np.diag(sigma.flatten())
+        )
 
         sigma_2 = np.zeros_like(sigma_1)
         for i in range(0, sigma_1.shape[0]):
@@ -167,7 +170,6 @@ class ZSpreadModelParameters:
             theta[i] = -(b[i] + mu_0 + beta[i] * mu[i]
                          - 0.5 * (sigma_0 ** 2 + beta[i] * sigma[i] ** 2)) / (
                            beta[i] * delta[i])
-
 
         return ZSpreadModelParameters(gamma, rho, rho_0, sigma_0, sigma,
                  mu_0, mu, beta, delta, b, a, sigma_1, sigma_2, sigma_3,

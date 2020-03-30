@@ -6,7 +6,7 @@ from pandas import concat
 from scipy.stats.stats import pearsonr
 from numpy import log, sqrt, ndarray
 
-from src.optimal_controls.estimation.parameter_estimation import estimate_ou_parameters
+from src.optimal_controls.estimation.ou_parameter_estimation import estimate_ou_parameters
 
 
 class OrnsteinUhlenbeckProcessParameters:

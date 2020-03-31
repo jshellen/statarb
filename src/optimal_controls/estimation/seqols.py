@@ -33,7 +33,6 @@ class SequentialLinearRegression:
         self.m_V_t = None
         self.m_M_p = np.zeros((self.m_dim, self.m_dim))
         self.m_V_p = np.zeros((self.m_dim, 1))
-        self.m_e = []
         self.m_coefs = None
 
     def add_obs(self, x, y):
@@ -69,13 +68,6 @@ class SequentialLinearRegression:
 
         self.m_M_p = self.m_M_t
         self.m_V_p = self.m_V_t
-
-        e_val, _ = np.linalg.eig(self.m_M_t)
-
-        idx = e_val.argsort()[::-1]
-        e_val = e_val[idx]
-
-        self.m_e.append(e_val[1])
 
         M_inv = np.linalg.pinv(self.m_M_t)
 

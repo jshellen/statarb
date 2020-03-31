@@ -10,6 +10,9 @@
     <facet type="Python" name="Python facet">
       <configuration sdkName="Python 3.6" />
     </facet>
+    <facet type="Python" name="Python facet">
+      <configuration sdkName="Python 3.6 (statarb)" />
+    </facet>
   </component>
   <component name="NewModuleRootManager">
     <content url="file://$MODULE_DIR$">
@@ -17,7 +20,7 @@
     </content>
     <orderEntry type="jdk" jdkName="Python 3.7" jdkType="Python SDK" />
     <orderEntry type="sourceFolder" forTests="false" />
-    <orderEntry type="library" name="Python 3.6 interpreter library" level="application" />
+    <orderEntry type="library" name="Python 3.6 (statarb) interpreter library" level="application" />
   </component>
   <component name="PyDocumentationSettings">
     <option name="format" value="PLAIN" />

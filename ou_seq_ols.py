@@ -3,8 +3,9 @@ from src.simulation.ornstein_uhlenbeck import (
     simulate_one_ornstein_uhlenbeck_path
 )
 
-from src.optimal_controls.estimation.seqols import (
-    SequentialLinearRegression
+from src.optimal_controls.estimation.kalman_filter import (
+    kalman_filter_predict,
+    kalman_filter_update
 )
 
 
@@ -13,14 +14,9 @@ def main():
     import numpy as np
     import matplotlib.pyplot as plt
 
-    n_step = 5000
+    n_step = 250
     dt = 1.0/250.0
-    x_1 = simulate_one_ornstein_uhlenbeck_path(0, 1.5, 0, 0.14, dt, n_step)
-    x_2 = simulate_one_ornstein_uhlenbeck_path(x_1[-1], 1.5, 0, 0.14, dt, n_step)
-
-    x = np.concatenate([x_1, x_2], axis=0)
-
-    seqols = SequentialLinearRegression(0.999, True, 1)
+    x = simulate_one_ornstein_uhlenbeck_path(0, 1.5, 0, 0.14, dt, n_step)
 
     x_ = np.roll(x, 1)[1:]
     y_ = x[1:]
@@ -29,33 +25,33 @@ def main():
     ax.scatter(x_, y_)
     plt.show()
 
-    coefs = np.zeros((len(x_), 2))
-    params = np.zeros((len(x_), 2))
-    for i in range(1, len(x_)):
+    # ---
 
-        seqols.add_obs(x_[i].reshape(-1, 1), y_[i])
+    # Initialization of state matrices
+    X = np.array([[1.0, 0.0]]).reshape(-1, 1)
+    delta = 0.9
+    P = np.eye(2)
+    A = np.array([[1, 0],
+                  [0, 1]])
+    Q = np.zeros(X.shape)
+    B = np.zeros(X.shape).reshape(1, -1)
+    U = np.zeros((X.shape[0], 1))
+    R = 5
+    X_t = np.zeros((n_step-1, 2))
+    for i in np.arange(0, n_step-1):
+        Y = np.array([[y_[i]]])
+        H = np.array([x_[i], 1]).reshape(1, -1)
+        (X, P) = kalman_filter_predict(X, P, A, Q, B, U)
+        (X, P, K, IM, IS, LH) = kalman_filter_update(X, P, Y, H, R)
+        X_t[i, :] = X.flatten()
 
-        coefs[i, :] = seqols.m_coefs.flatten()
-
-        a = seqols.m_coefs[0][1]
-        b = seqols.m_coefs[0][0]
-
-        kappa = None
-        if a > 0:
-            kappa = -np.log(a)/dt
-        theta = b/(1 - a)
-        params[i, 0] = kappa
-        params[i, 1] = theta
-
-    fig, ax = plt.subplots(2, 1, figsize=(6, 6))
-    ax[0].plot(coefs[200:, 0])
-    ax[1].plot(coefs[200:, 1])
-
-    fig, ax = plt.subplots(3, 1, figsize=(6, 6))
-    ax[0].plot(seqols.m_e[250:])
-    ax[1].plot(params[250:, 0])
-    ax[2].plot(params[250:, 1])
+    fig, ax = plt.subplots(2, 2, figsize=(6, 6))
+    ax[0, 0].plot(X_t[:, 0], color='blue', lw=4)
+    ax[0, 1].plot(-np.log(X_t[:, 0])/dt, color='blue', lw=4)
+    ax[1, 0].plot(X_t[:, 1], color='blue', lw=4)
+    ax[1, 1].plot(X_t[:, 1]/(1 - X_t[:, 0]), color='blue', lw=4)
     plt.show()
+
 
 
 if __name__ == '__main__':

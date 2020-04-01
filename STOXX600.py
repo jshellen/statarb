@@ -1,13 +1,13 @@
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
-from src.data.data_handler import DataHandler
 
-
-from src.optimal_controls.z_spread_model_parameters import  (
+from src.data.data_handler import (
+    DataHandler
+)
+from src.optimal_controls.z_spread_model_parameters import (
     ZSpreadModelParameters
 )
-
 from src.optimal_controls.z_spread_model_solver import (
     ZSpreadModelSolver
 )

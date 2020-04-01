@@ -1,9 +1,10 @@
+
 import numpy as np
 
 
 class SequentialLinearRegression:
 
-    def __init__(self, alpha, constant, n_vars):
+    def __init__(self, alpha, constant, n_vars, method):
 
         if not isinstance(alpha, float):
             raise TypeError('alpha has to be type of <float>.')
@@ -13,6 +14,9 @@ class SequentialLinearRegression:
 
         if not isinstance(n_vars, int):
             raise TypeError('n_vars has to be type of <int>.')
+
+        if not isinstance(method, str):
+            raise TypeError('method has to be type of <str>.')
 
         if alpha <= 0:
             raise ValueError(f'alpha has to be positive float, was: {float}')
@@ -33,12 +37,12 @@ class SequentialLinearRegression:
         self.m_V_t = None
         self.m_M_p = np.zeros((self.m_dim, self.m_dim))
         self.m_V_p = np.zeros((self.m_dim, 1))
-        self.m_e = []
+        self.m_method = method
         self.m_coefs = None
 
-    def add_obs(self, x, y):
+    def update(self, x, y):
         """
-        Add observation and re-evaluate.
+        Solve coefficients using normal equation
         @param: x vector of observations
         """
 
@@ -64,22 +68,19 @@ class SequentialLinearRegression:
         if self.m_constant:
             x_ = np.concatenate([np.array([[1]]), x_], axis=1)
 
-        self.m_M_t = (1-self.m_alpha)*x_.T.dot(x_) + self.m_alpha * self.m_M_p
-        self.m_V_t = (1-self.m_alpha)*x_.T.dot(y).reshape(-1, 1) + self.m_alpha * self.m_V_p
+        if self.m_method == 'Inverse':
 
-        self.m_M_p = self.m_M_t
-        self.m_V_p = self.m_V_t
+            self.m_M_t = (1-self.m_alpha)*x_.T.dot(x_) + self.m_alpha * self.m_M_p
+            self.m_V_t = (1-self.m_alpha)*x_.T.dot(y).reshape(-1, 1) + self.m_alpha * self.m_V_p
 
-        e_val, _ = np.linalg.eig(self.m_M_t)
+            self.m_M_p = self.m_M_t
+            self.m_V_p = self.m_V_t
 
-        idx = e_val.argsort()[::-1]
-        e_val = e_val[idx]
+            M_inv = np.linalg.pinv(self.m_M_t)
 
-        self.m_e.append(e_val[1])
+            self.m_coefs = np.matmul(M_inv, self.m_V_t).reshape(1, -1)
 
-        M_inv = np.linalg.pinv(self.m_M_t)
 
-        self.m_coefs = np.matmul(M_inv, self.m_V_t).reshape(1, -1)
 
 
 if __name__ == '__main__':

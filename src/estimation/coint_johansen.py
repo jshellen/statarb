@@ -144,9 +144,13 @@ mapping = {
     "TRACE_4": TRACE_4
 }
 
+
 class Johansen(object):
-    """Implementation of the Johansen test for cointegration.
+    """
+    Implementation of the Johansen test for cointegration.
+
     References:
+
         - Hamilton, J. D. (1994) 'Time Series Analysis', Princeton Univ. Press.
         - MacKinnon, Haug, Michelis (1996) 'Numerical distribution functions of
         likelihood ratio tests for cointegration', Queen's University Institute

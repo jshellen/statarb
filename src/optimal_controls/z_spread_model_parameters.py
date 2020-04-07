@@ -1,7 +1,7 @@
 import numpy as np
 import pandas as pd
 
-from .estimation.ou_parameter_estimation import (
+from src.estimation.ou_parameter_estimation import (
     estimate_ln_coint_params
 )
 

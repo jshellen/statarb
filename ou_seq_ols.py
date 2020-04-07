@@ -3,7 +3,7 @@ from src.simulation.ornstein_uhlenbeck import (
     simulate_one_ornstein_uhlenbeck_path
 )
 
-from src.optimal_controls.estimation.kalman_filter import (
+from src.estimation.kalman_filter import (
     kalman_filter_predict,
     kalman_filter_update
 )

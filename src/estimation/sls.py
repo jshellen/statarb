@@ -37,7 +37,10 @@ class SequentialLinearRegression:
         self.m_V_t = None
         self.m_M_p = np.zeros((self.m_dim, self.m_dim))
         self.m_V_p = np.zeros((self.m_dim, 1))
+<<<<<<< HEAD:src/optimal_controls/estimation/sequential_ordinary_least_squares.py
         self.m_method = method
+=======
+>>>>>>> 3b1ed34edd111129a81f5bc07095414c154838f7:src/optimal_controls/estimation/seqols.py
         self.m_coefs = None
 
     def update(self, x, y):
@@ -73,6 +76,7 @@ class SequentialLinearRegression:
             self.m_M_t = (1-self.m_alpha)*x_.T.dot(x_) + self.m_alpha * self.m_M_p
             self.m_V_t = (1-self.m_alpha)*x_.T.dot(y).reshape(-1, 1) + self.m_alpha * self.m_V_p
 
+<<<<<<< HEAD:src/optimal_controls/estimation/sequential_ordinary_least_squares.py
             self.m_M_p = self.m_M_t
             self.m_V_p = self.m_V_t
 
@@ -80,6 +84,9 @@ class SequentialLinearRegression:
 
             self.m_coefs = np.matmul(M_inv, self.m_V_t).reshape(1, -1)
 
+=======
+        M_inv = np.linalg.pinv(self.m_M_t)
+>>>>>>> 3b1ed34edd111129a81f5bc07095414c154838f7:src/optimal_controls/estimation/seqols.py
 
 
 

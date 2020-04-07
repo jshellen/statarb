@@ -1,5 +1,4 @@
 import numpy as np
-
 import statsmodels.api as sm
 
 from .coint_johansen import Johansen

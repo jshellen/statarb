@@ -9,7 +9,7 @@ from src.simulation.ornstein_uhlenbeck import (
     sim_ou
 )
 
-from src.optimal_controls.estimation.ou_parameter_estimation import (
+from src.estimation.ou_parameter_estimation import (
     estimate_ou_parameters_using_lsq
 )
 

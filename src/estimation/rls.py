@@ -76,7 +76,7 @@ def equalizer_setup(F, rx_delay = 0):
   return ff_fb
 
 
-class RLSFilter(object):
+class RLSFilter2(object):
     '''
     Basic Recursive Least Squares adaptive filter. Suppose we wish to
     estimate a signal d(n) from a related signal x(n).  (for example, we
@@ -139,9 +139,10 @@ class RLSFilter(object):
         self.Rt = delta * np.eye(p + 1)  # Empirical covariance
         self.Rt_inv = (1 / delta) * np.eye(p + 1)  # Inverse of Rt
         self.x = deque([0] * (p + 1), maxlen=p + 1)  # Saved data vector
-
+        self.x_hat_prev = 0
+        self.d = []
         self.w = np.array([0] * (p + 1))
-
+        self.s = []
 
     def ff(self, x_n):
         '''
@@ -177,14 +178,36 @@ class RLSFilter(object):
 
         # ---------------------------
         u = np.dot(self.Rt_inv, x)  # Intermediate value
-        g = u / (self.lmbda + np.dot(x.T, u))  # Gain vector
+        d = self.lmbda + np.dot(x.T, u)
+        self.d.append(d[0][0])
+        g = u / d  # Gain vector
         self.Rt_inv = l * (self.Rt_inv - np.dot(g, u.T))
-
+        w_old = self.w.copy()
         self.w = (w + e * g).reshape(self.p + 1)  # Update the filter
         self.Rt_inv = l * np.dot((np.eye(self.p + 1) - np.dot(g, x.T)),
                                  self.Rt_inv)
 
         self.Rt_inv = 0.5 * (self.Rt_inv + self.Rt_inv.T)  # Ensure symmetry
+
+        n = len(self.s)
+        self.s.append(sum((self.w - w_old)**2))
+
+
         return
 
+    def ff_fb(self, x):
+        """
+        Forward backward algorithm. Updates the coefficient vector w
+        based on new dta.
+        """
 
+        # Predict new observation
+        self.fb(x - self.x_hat_prev)
+
+        # Update parameters
+        x_hat = self.ff(x)
+
+        # Save previous
+        self.x_hat_prev = x_hat
+
+        return self.w.copy()

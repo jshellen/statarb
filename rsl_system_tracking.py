@@ -1,28 +1,20 @@
-import matplotlib.pyplot as plt
-import numpy as np
-import pandas as pd
-
 from src.data.data_handler import (
     DataHandler
 )
 from src.estimation.rls import (
-    RLSFilter,
+    RLSFilter2,
     system_identification_setup
 )
-
-
-def download_time_series():
-
-    symbols = ['EWA', 'EWC']
-
-    data = DataHandler.download_historical_closings(symbols).dropna()
-
-    return data
+import matplotlib.pyplot as plt
+import numpy as np
 
 
 def test_arma_system_identification():
+
     """
+
     Here we simulate a ARMA system and seek to identify its parameters.
+
     """
     n_steps = 500
     dt = 1.0 / n_steps
@@ -31,7 +23,7 @@ def test_arma_system_identification():
     for i in range(2, n_steps):
         y_1[i] = 0.01 * dt + 0.99 * y_1[i - 1] + 0.25 * np.sqrt(dt) * np.random.normal(0, 1)
 
-    F_1 = RLSFilter(p=1, lmbda=0.9999, delta=1e-5)
+    F_1 = RLSFilter2(p=1, lmbda=0.9999, delta=1e-5)
     F_1 = system_identification_setup(F_1)
     w_hat_1 = np.array([F_1(y_i[0]) for y_i in y_1])
 
@@ -40,7 +32,9 @@ def test_arma_system_identification():
     plt.show()
 
     """
+    
     ARMA time-dependent parameters
+    
     """
     t = np.linspace(0, 10, n_steps)
     b_t = np.sin(t)
@@ -48,7 +42,7 @@ def test_arma_system_identification():
     for i in range(1, n_steps):
         y_2[i] = 0.01 * dt + b_t[i - 1] * y_2[i - 1] + 0.25 * np.sqrt(dt) * np.random.normal(0, 1)
 
-    F_2 = RLSFilter(p=1, lmbda=0.90, delta=1e-6)
+    F_2 = RLSFilter2(p=1, lmbda=0.90, delta=1e-6)
     F_2 = system_identification_setup(F_2)
 
     # Estimate and update parameters

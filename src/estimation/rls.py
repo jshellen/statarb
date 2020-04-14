@@ -1,7 +1,7 @@
 
 import numpy as np
 
-class FilterRLS:
+class RLSFilter:
 
     def __init__(self, n, mu=0.99, eps=0.1, w_0="random"):
 
@@ -18,13 +18,13 @@ class FilterRLS:
         self.R = 1/self.eps * np.eye(n)
         self.w_history = False
 
-
     def update(self, d, x):
         """
-        Adapt weights according one desired value and its input.
+        Update filter
 
+        d = outcome
+        x = predictive variables (observed before outcome)
         """
-
         x = x.reshape(-1, 1)
         y = np.dot(self.w.T, x).flatten()[0]
         e = d - y
@@ -34,3 +34,4 @@ class FilterRLS:
         self.R = 0.5 * (self.R + self.R.T)  # Ensure symmetry
         dw = np.dot(self.R, x) * e
         self.w += dw
+

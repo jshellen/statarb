@@ -18,6 +18,7 @@ class DataHandler:
             field_data.index = pd.DatetimeIndex(field_data.index)
             field_data.columns = [symbol]
             data.append(field_data)
+
         data = pd.concat(data, axis=1)
 
         return data

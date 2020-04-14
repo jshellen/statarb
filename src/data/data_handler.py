@@ -11,15 +11,13 @@ class DataHandler:
         if not isinstance(symbols, list):
             symbols = [symbols]
 
-        data = []
+        symbol_data = {}
         for symbol in symbols:
-            historical_sample = api.Ticker(symbol).history(period="max")
-            field_data = historical_sample['Close'].to_frame()
-            field_data.index = pd.DatetimeIndex(field_data.index)
-            field_data.columns = [symbol]
-            data.append(field_data)
 
-        data = pd.concat(data, axis=1)
+            # Download data
+            data = api.Ticker(symbol).history(period="max")
 
-        return data
+            symbol_data.update({symbol: data.to_dict() })
+
+        return symbol_data
 

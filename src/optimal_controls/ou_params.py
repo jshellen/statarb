@@ -6,27 +6,25 @@ from pandas import concat
 from scipy.stats.stats import pearsonr
 from numpy import log, sqrt, ndarray
 
-from src.estimation.ou_parameter_estimation import estimate_ou_parameters
+from src.estimation.ou_parameter_estimation import estimate_ou_parameters_using_lsq
 
 
 class OrnsteinUhlenbeckProcessParameters:
 
-    def __init__(self, kappa, theta, eta, sigma_b, rho):
+    def __init__(self, kappa, theta, eta, sigma_b, rho, mu_b, x_0, b_0):
 
-        if not isinstance(kappa, (int, float)):
-            raise TypeError('kappa has to be type of <int> or <float>.')
+        def check_numeric(arg, arg_name):
+            if not isinstance(arg, (int, float)):
+                raise TypeError('{} has to be type of <int> or <float>.'.format(arg_name))
 
-        if not isinstance(theta, (int, float)):
-            raise TypeError('theta has to be type of <int> or <float>.')
-
-        if not isinstance(eta, (int, float)):
-            raise TypeError('eta has to be type of <int> or <float>.')
-
-        if not isinstance(sigma_b, (int, float)):
-            raise TypeError('sigma_b has to be type of <int> or <float>.')
-
-        if not isinstance(rho, (int, float)):
-            raise TypeError('rho has to be type of <int> or <float>.')
+        check_numeric(kappa, 'kappa')
+        check_numeric(theta, 'theta')
+        check_numeric(eta, 'eta')
+        check_numeric(sigma_b, 'sigma_b')
+        check_numeric(rho, 'rho')
+        check_numeric(mu_b, 'mu_b')
+        check_numeric(x_0, 'x_0')
+        check_numeric(b_0, 'b_0')
 
         # Initialize values to none
         self.m_eta = eta
@@ -34,6 +32,9 @@ class OrnsteinUhlenbeckProcessParameters:
         self.m_rho = rho
         self.m_theta = theta
         self.m_kappa = kappa
+        self.m_mu_b = mu_b
+        self.m_x_0 = x_0
+        self.m_b_0 = b_0
 
     @property
     def kappa(self):
@@ -66,9 +67,30 @@ class OrnsteinUhlenbeckProcessParameters:
     @property
     def sigma_b(self):
         """
-        Volatility of asset "B"
+        Volatility of asset "B" (GBM)
         """
         return self.m_sigma_b
+
+    @property
+    def mu_b(self):
+        """
+        Drift of asset "B" (GBM)
+        """
+        return self.m_x_0           
+
+    @property
+    def x_0(self):
+        """
+        Initial OU Process value
+        """
+        return self.m_x_0      
+
+    @property
+    def b_0(self):
+        """
+        Initial value of asset "B" (GBM)
+        """
+        return self.m_b_0        
 
     def ols_parameter_estimation(self, a_data, b_data, dt):
 

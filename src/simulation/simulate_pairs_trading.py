@@ -79,7 +79,7 @@ def simulate_pairs_trading(model_parameters, strategy_parameters, n_steps):
     n_sim = 1 # hard coded, sima are instead produced by several calls.
     a, b, s = simulate_ou_spread(n_sim, n_steps, model_parameters.b_0, model_parameters.x_0,
                                            model_parameters.kappa, model_parameters.theta,
-                                           model_parameters.eta, model_parameters.sigma_b,
+                                           model_parameters.eta, model_parameters.mu_b, model_parameters.sigma_b,
                                            dt)
 
     # Create position objects

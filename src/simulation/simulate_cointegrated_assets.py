@@ -23,14 +23,15 @@ def simulate_b(N_sim, N_steps, B_0, mu, sigma_B, dt):
     return B    
 
 
-def simulate_ou_spread(N_sim, N_steps, B_0, mu, kappa, theta, eta, sigma_B, dt):
+def simulate_ou_spread(N_sim, N_steps, B_0, X_0, kappa, theta, eta, mu, sigma_B, dt):
     
     size = (N_steps + 1, N_sim)
     #np.random.seed(0)
 
     B = simulate_b(N_sim, N_steps, B_0, mu, sigma_B, dt)
 
-    X = np.full(size, fill_value=theta)
+    X = np.empty(size)
+    X[0, :] = X_0
     randn = np.random.normal(0, 1, size)
     for j in range(N_sim):
         for i in range(N_steps):

@@ -4,7 +4,7 @@ from pandas.core.frame import DataFrame
 from pandas.core.series import Series
 from pandas import concat
 from scipy.stats.stats import pearsonr
-from numpy import log, sqrt, ndarray
+from numpy import log, sqrt, ndarray, log
 
 from src.estimation.ou_parameter_estimation import estimate_ou_parameters_using_lsq
 
@@ -92,7 +92,8 @@ class OrnsteinUhlenbeckProcessParameters:
         """
         return self.m_b_0        
 
-    def ols_parameter_estimation(self, a_data, b_data, dt):
+    @classmethod
+    def ols_parameter_estimation(cls, a_data, b_data, dt):
 
         if not isinstance(a_data, (DataFrame, Series, ndarray)):
             raise TypeError('a_data has invalid data type')
@@ -117,35 +118,33 @@ class OrnsteinUhlenbeckProcessParameters:
             
         if isinstance(b_data, ndarray):
             b_data = DataFrame(data=b_data)
-        
-        try:
                 
-            # Compute logarithmic spread level
-            x = log(a_data) - log(b_data)
-            
-            # Estimate OU parameters
-            pars = estimate_ou_parameters(x.values, dt)
-            
-            self.m_kappa = pars[0]
-            self.m_theta = pars[1]
-            self.m_eta = pars[2]
-
-            # Compute correlation between asset a and spread level
-            a = b_data.pct_change(1)
-            b = x.diff(1)
-            c = concat([a, b], axis=1).dropna()
-            self.m_rho = pearsonr(c.iloc[:, 0], c.iloc[:, 1])[0]
-
-            # Compute scaled volatility for asset b
-            self.m_sigma_b = a.std().values[0]*sqrt(1.0/dt)
+        # Compute logarithmic spread level
+        x = log(a_data) - log(b_data)
         
-            return 1
+        # Estimate OU parameters
+        pars = estimate_ou_parameters_using_lsq(x.values, dt)
+        kappa_est = pars[0]
+        theta_est = pars[1]
+        eta_est = pars[2]            
+
+        # Compute correlation between asset a and spread level
+        a = b_data.pct_change(1)
+        b = x.diff(1)
+        c = concat([a, b], axis=1).dropna()
+        rho_est = pearsonr(c.iloc[:, 0], c.iloc[:, 1])[0]
+
+        # Compute scaled volatility for asset b
+        sigma_est = a.std().values[0]*sqrt(1.0/dt)
         
-        except Exception as e:
-            
-            print(e)
-            
-            return 0
+        x_0 = a_data.iloc[0, 0]
+        b_0 = b_data.iloc[0, 0]
+
+        N = b_data.shape[0]
+        sigma_est = a.std().values[0]*sqrt(1.0/dt)
+        mu_est = log(b_data.iloc[-1, 0] / b_data.iloc[0, 0]) / (dt * N) +0.5 * sigma_est**2
+    
+        return cls(kappa_est, theta_est, eta_est, sigma_est, rho_est, mu_est, x_0, b_0)
     
     def __str__(self):
         

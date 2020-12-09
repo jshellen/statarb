@@ -65,15 +65,22 @@ def create_trade(price, amount, contract):
 
 def simulate_pairs_trading(model_parameters, strategy_parameters, n_steps):
 
+    if model_parameters.rho != 0.0:
+        raise NotImplementedError('Simulated correlated BMs (dW_x*dW_b = rho*dt) not implemented.')
+
+    T = strategy_parameters.trading_horizon
+    dt = T / n_steps
+
     # Create contract objects
     contract_a = Contract(strategy_parameters.symbol_a, 'F', 50)
     contract_b = Contract(strategy_parameters.symbol_b, 'F', 20)
 
     # Simulate prices
-    a, b, s = simulate_ou_spread(1, n_steps, 100, 0,
+    n_sim = 1 # hard coded, sima are instead produced by several calls.
+    a, b, s = simulate_ou_spread(n_sim, n_steps, model_parameters.b_0, model_parameters.x_0,
                                            model_parameters.kappa, model_parameters.theta,
-                                           model_parameters.eta, model_parameters.sigma_b,
-                                           1.0/250.0)
+                                           model_parameters.eta, model_parameters.mu_b, model_parameters.sigma_b,
+                                           dt)
 
     # Create position objects
     PositionA = Position2(contract_a)
@@ -85,16 +92,18 @@ def simulate_pairs_trading(model_parameters, strategy_parameters, n_steps):
     portfolio.add_position(PositionB)
 
     for i in range(0, n_steps):
-
+        
         # Compute ln-spread
         spread = (np.log(a[i]) - np.log(b[i]))[0]
 
         # Percentage allocations
+        time_left = T - dt*i
         optimal_decisions = OUSpreadModelSolver.solve_asset_weights(model_parameters,
-                                                                    strategy_parameters, spread, 1)
+                                                                    strategy_parameters, spread, time_left) #TODO: rem hard coded tau.
 
 
         # Rebalance position in A
+        # TODO: Replace h[t]*V[0] in alloc_a_trunc with h[t]*V[t]. I.e. 'h' is proportion of current wealth, not initial.
         amount = compute_rebalancing_amount(optimal_decisions.alloc_a_trunc,
                                             a[i], contract_a, portfolio)
 
@@ -112,6 +121,7 @@ def simulate_pairs_trading(model_parameters, strategy_parameters, n_steps):
 
 
         # Rebalance position in B
+        # TODO: Replace h[t]*V[0] in alloc_a_trunc with h[t]*V[t]. I.e. 'h' is proportion of current wealth, not initial.
         amount = compute_rebalancing_amount(optimal_decisions.alloc_b_trunc,
                                             b[i], contract_b, portfolio)
 

@@ -21,20 +21,21 @@ def main():
                                                           horizon, risk_tol, max_leverage)
 
     # OU process parameters
-    n_sim = 1
+    n_sim = 20
     n_steps = 500
     b_0 = 100
-    mu = 0.05  # drift of the spread
+    x_0 = 0.0
+    mu_b = 0.05  # drift of the spread
     kappa = 5.5  # spread mean-reversion speed
     theta = 0.0  # average spread level
     eta = 0.05  # spread (normal) volatility
     sigma_b = 0.20  # asset b annual volatility
-    rho = 0.0  # correlation
-    dt = 1.0/250.0  # measurement frequency (1 day)
-    model_parameters = OrnsteinUhlenbeckProcessParameters(kappa, theta, eta, sigma_b, rho)
+    rho = 0.0  # correlation dW_x*dW_b = rho*dt, TODO: implement in simulation, curr. not supported.
+    #dt = 1.0/250.0  # implied by n_steps and horizon
+    model_parameters = OrnsteinUhlenbeckProcessParameters(kappa, theta, eta, sigma_b, rho, mu_b, x_0, b_0)
 
     a_prices, b_prices, portfolios = simulate_strategy(model_parameters,
-                                                       strategy_parameters, n_steps, 20)
+                                                       strategy_parameters, n_steps, n_sim)
 
     pos_a = portfolios[0].get_position('A')
     pos_b = portfolios[0].get_position('B')

@@ -63,52 +63,64 @@ def create_trade(price, amount, contract):
                  contract.sec_type, commission)
 
 
-def simulate_pairs_trading(model_parameters, strategy_parameters, n_steps):
+def simulate_pairs_trading(
+        model_parameters,
+        strategy_parameters,
+        a, b, s, T, dt,
+        contract_a, contract_b, 
+        n_steps,
+        simulation_number):
 
-    if model_parameters.rho != 0.0:
-        raise NotImplementedError('Simulated correlated BMs (dW_x*dW_b = rho*dt) not implemented.')
-
-    T = strategy_parameters.trading_horizon
-    dt = T / n_steps
+    #T = strategy_parameters.trading_horizon
+    #dt = T / n_steps
 
     # Create contract objects
-    contract_a = Contract(strategy_parameters.symbol_a, 'F', 50)
-    contract_b = Contract(strategy_parameters.symbol_b, 'F', 20)
+    #contract_a = Contract(strategy_parameters.symbol_a, 'F', 50)
+    #contract_b = Contract(strategy_parameters.symbol_b, 'F', 20)
 
     # Simulate prices
     n_sim = 1 # hard coded, sima are instead produced by several calls.
-    a, b, s = simulate_ou_spread(n_sim, n_steps, model_parameters.b_0, model_parameters.x_0,
-                                           model_parameters.kappa, model_parameters.theta,
-                                           model_parameters.eta, model_parameters.mu_b, model_parameters.sigma_b,
-                                           dt)
+    # a, b, s = simulate_ou_spread(
+    #     n_sim, n_steps, model_parameters.b_0, model_parameters.x_0,
+    #     model_parameters.kappa, model_parameters.theta,
+    #     model_parameters.eta, model_parameters.mu_b,
+    #     model_parameters.sigma_b, dt)
 
     # Create position objects
     PositionA = Position2(contract_a)
     PositionB = Position2(contract_b)
     
     # Create portfolio
-    portfolio = Portfolio('Test')
+    portfolio = Portfolio(f'Portfolio #{simulation_number}')
     portfolio.add_position(PositionA)
     portfolio.add_position(PositionB)
 
     for i in range(0, n_steps):
-        
+
+
+        #------------------------------------------------------------------#
+        #                       Update Tradng Model                        #
+        #------------------------------------------------------------------#
+    
         # Compute ln-spread
-        spread = (np.log(a[i]) - np.log(b[i]))[0]
+        spread = np.log(a[i]) - np.log(b[i])
 
         # Percentage allocations
         time_left = T - dt*i
-        optimal_decisions = OUSpreadModelSolver.solve_asset_weights(model_parameters,
-                                                                    strategy_parameters, spread, time_left) #TODO: rem hard coded tau.
+        optimal_decisions = OUSpreadModelSolver.solve_asset_weights(
+            model_parameters, strategy_parameters, spread, time_left) 
 
+
+        #------------------------------------------------------------------#
+        #                      Rebalance position in A                     #
+        #------------------------------------------------------------------#
 
         # Rebalance position in A
-        # TODO: Replace h[t]*V[0] in alloc_a_trunc with h[t]*V[t]. I.e. 'h' is proportion of current wealth, not initial.
-        amount = compute_rebalancing_amount(optimal_decisions.alloc_a_trunc,
-                                            a[i], contract_a, portfolio)
+        amount = compute_rebalancing_amount(
+            optimal_decisions.alloc_a_trunc, a[i], contract_a, portfolio)
 
         # Create trade
-        trade = create_trade(a[i][0], amount, contract_a)
+        trade = create_trade(a[i], amount, contract_a)
 
         if trade is not None:
 
@@ -117,40 +129,66 @@ def simulate_pairs_trading(model_parameters, strategy_parameters, n_steps):
 
 
         # Update portfolio market value
-        portfolio.update_market_value(contract_a.symbol, a[i][0], a[i][0])
+        portfolio.update_market_value(contract_a.symbol, a[i], a[i])
 
+
+        #------------------------------------------------------------------#
+        #                      Rebalance position in B                     #
+        #------------------------------------------------------------------#
 
         # Rebalance position in B
-        # TODO: Replace h[t]*V[0] in alloc_a_trunc with h[t]*V[t]. I.e. 'h' is proportion of current wealth, not initial.
-        amount = compute_rebalancing_amount(optimal_decisions.alloc_b_trunc,
-                                            b[i], contract_b, portfolio)
+        amount = compute_rebalancing_amount(
+            optimal_decisions.alloc_b_trunc, b[i], contract_b, portfolio)
 
         # Create trade
-        trade = create_trade(b[i][0], amount, contract_b)
+        trade = create_trade(b[i], amount, contract_b)
 
         if trade is not None:
 
             # Add the trade to the position
             portfolio.add_trade(trade)
 
-        # Update portfolio market value
-        portfolio.update_market_value(contract_b.symbol, b[i][0], b[i][0])
+        
 
-    return a, b, s, portfolio
+        # Update portfolio market value
+        portfolio.update_market_value(contract_b.symbol, b[i], b[i])
+
+    return portfolio
 
 
 def simulate_strategy(model_parameters, strategy_parameters, n_steps, n_sim):
+    
 
+    contract_a = Contract(strategy_parameters.symbol_a, 'F', 50)
+    contract_b = Contract(strategy_parameters.symbol_b, 'F', 20)
+    
     portfolios = {}
     a_prices = {}
     b_prices = {}
-
+    
     for i in range(0, n_sim):
-
-        a, b, s, portfolio = simulate_pairs_trading(model_parameters, strategy_parameters, n_steps)
+        
+        # Simulate prices and spread
+        A_t, B_t, X_t = simulate_ou_spread(
+             n_sim, n_steps, model_parameters.b_0, model_parameters.x_0,
+             model_parameters.kappa, model_parameters.theta,
+             model_parameters.eta, model_parameters.mu_b,
+             model_parameters.sigma_b, 
+             strategy_parameters.trading_horizon / float(n_steps))
+        
+        # Simulate pairs trading strategy
+        portfolio = simulate_pairs_trading(
+            model_parameters,
+            strategy_parameters,
+            A_t, B_t, X_t, 
+            strategy_parameters.trading_horizon,
+            strategy_parameters.trading_horizon / float(n_steps),
+            contract_a, contract_b, 
+            n_steps,
+            i)
 
         portfolios.update({i: deepcopy(portfolio)})
-        a_prices.update({i: a})
-        b_prices.update({i: b})
+        a_prices.update({i: A_t})
+        b_prices.update({i: B_t})
 
     return a_prices, b_prices, portfolios

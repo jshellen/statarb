@@ -31,7 +31,7 @@ def plot_optimal_solution(X,ou_params,model_params,N_points=200):
     hs   = np.zeros((len(taus),len(xs)))
     for i,tau in enumerate(taus):
         for j,x in enumerate(xs):
-            opt_sol = OU_Spread_Model.solve_allocation(ou_params,model_params,x,tau)
+            opt_sol = OUSpreadModelSolver.solve_asset_weights(ou_params,model_params,x,tau)
             hs[i,j] = opt_sol.alloc_a_pct_trunc
     
     # Plot the spread with the optimal solution
@@ -51,13 +51,13 @@ def plot_optimal_solution(X,ou_params,model_params,N_points=200):
     
     # Set y-labels
     y_rng  = np.arange(0,len(taus),50)
-    ax.set_ylabel('Trading Time Remaining',fontsize=14)
+    ax.set_ylabel(r'$Trading \ time \ remaining \ (T-t)$',fontsize=14)
     ax.set_yticks(y_rng)
     ax.set_yticklabels([round(taus[t],2) for t in y_rng])
         
     # Set x-labels
     x_rng = np.arange(0,len(xs),50)
-    ax.set_xlabel('Spread Level',fontsize=14)
+    ax.set_xlabel(r'$Spread \ level \ (X_t)$',fontsize=14)
     ax.set_xticks(y_rng)
     ax.set_xticklabels([round(xs[i],2) for i in x_rng])
     
@@ -71,7 +71,7 @@ def plot_optimal_solution(X,ou_params,model_params,N_points=200):
     plt.colorbar(im_1, cax = cax)  
     
     # Set title
-    ax.set_title('Optimal allocation')
+    ax.set_title(r'$Optimal \ allocation \ (h_t)$')
     
     fig.tight_layout()
     
